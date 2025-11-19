@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#000000"/>
+  
+  <!-- Lime accent square -->
+  <rect x="8" y="8" width="48" height="48" fill="#cafc4f"/>
+  
+  <!-- Article/document icon in black -->
+  <path d="M20 18 h24 v2 h-24 z M20 26 h24 v2 h-24 z M20 34 h16 v2 h-16 z M20 42 h20 v2 h-20 z" fill="#000000"/>
+  
+  <!-- Bold border -->
+  <rect x="8" y="8" width="48" height="48" fill="none" stroke="#000000" stroke-width="3"/>
+</svg>
