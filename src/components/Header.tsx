@@ -1,4 +1,4 @@
-import { PenTool, Menu, X } from 'lucide-react';
+import { PenTool, Menu, X, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
@@ -27,79 +27,111 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b-4 border-black backdrop-blur-sm bg-opacity-95">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-11 h-11 bg-primary border-3 border-black flex items-center justify-center rotate-3 group-hover:rotate-6 transition-transform">
-              <PenTool className="w-6 h-6" strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="text-xl font-black tracking-tight">ArticleForge</span>
-              <span className="text-xs font-bold text-gray-600 tracking-wider">AI STUDIO</span>
-            </div>
-          </Link>
+    <header className="sticky top-0 z-50 py-4 px-4 sm:px-6 lg:px-8 backdrop-blur-md bg-white/80">
+      {/* Modern Rounded Container */}
+      <nav className="max-w-7xl mx-auto">
+        <div className="bg-white border-4 border-black rounded-[32px] shadow-brutal px-6 sm:px-8 py-4">
+          <div className="flex justify-between items-center">
+            {/* Modern Logo Design */}
+            <Link to="/" className="flex items-center gap-4 group">
+              {/* Unique Icon Container */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary rounded-2xl blur-sm opacity-40 group-hover:opacity-60 transition-opacity"></div>
+                <div className="relative w-14 h-14 bg-black rounded-2xl flex items-center justify-center border-4 border-black transform group-hover:scale-105 transition-transform">
+                  <PenTool className="w-7 h-7 text-primary" strokeWidth={2.5} />
+                </div>
+              </div>
+              
+              {/* Modern Typography */}
+              <div className="hidden sm:flex flex-col justify-center">
+                <span className="text-2xl font-black tracking-tight leading-none">ArticleForge</span>
+                <div className="flex items-center gap-2 mt-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                  <span className="text-[10px] font-black text-gray-500 tracking-[0.2em] uppercase">AI Studio</span>
+                </div>
+              </div>
+            </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-2">
-            <button
-              onClick={() => scrollToSection('generator')}
-              className="px-5 py-2.5 font-bold text-sm hover:bg-black hover:text-primary transition-all border-2 border-transparent hover:border-black"
-            >
-              GENERATOR
-            </button>
-            <button
-              onClick={() => scrollToSection('how-it-works')}
-              className="px-5 py-2.5 font-bold text-sm hover:bg-black hover:text-primary transition-all border-2 border-transparent hover:border-black"
-            >
-              HOW IT WORKS
-            </button>
-            <button
-              onClick={() => scrollToSection('faq')}
-              className="px-5 py-2.5 font-bold text-sm hover:bg-black hover:text-primary transition-all border-2 border-transparent hover:border-black"
-            >
-              FAQ
-            </button>
-            <button
-              onClick={() => scrollToSection('generator')}
-              className="ml-2 px-6 py-2.5 bg-primary border-3 border-black font-black text-sm shadow-brutal-sm hover-lift"
-            >
-              START NOW
-            </button>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden w-10 h-10 border-2 border-black bg-primary flex items-center justify-center"
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t-4 border-black bg-white">
-            <div className="flex flex-col gap-2">
+            {/* Modern Desktop Navigation */}
+            <div className="hidden lg:flex items-center">
+              {/* Rounded Pill Navigation Container */}
+              <div className="flex items-center gap-1 bg-gray-50 rounded-full p-1.5 border-3 border-black mr-4">
+                <button
+                  onClick={() => scrollToSection('generator')}
+                  className="group relative px-6 py-2.5 font-bold text-sm rounded-full transition-all hover:bg-white"
+                >
+                  <span className="relative z-10">Generator</span>
+                  <div className="absolute inset-0 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-0"></div>
+                </button>
+                <button
+                  onClick={() => scrollToSection('how-it-works')}
+                  className="group relative px-6 py-2.5 font-bold text-sm rounded-full transition-all hover:bg-white"
+                >
+                  <span className="relative z-10">How it Works</span>
+                  <div className="absolute inset-0 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-0"></div>
+                </button>
+                <button
+                  onClick={() => scrollToSection('faq')}
+                  className="group relative px-6 py-2.5 font-bold text-sm rounded-full transition-all hover:bg-white"
+                >
+                  <span className="relative z-10">FAQ</span>
+                  <div className="absolute inset-0 bg-primary rounded-full opacity-0 group-hover:opacity-100 transition-opacity -z-0"></div>
+                </button>
+              </div>
+              
+              {/* Modern CTA Button */}
               <button
                 onClick={() => scrollToSection('generator')}
-                className="px-4 py-3 font-bold text-sm text-left hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
+                className="group relative overflow-hidden px-8 py-3 bg-black text-primary rounded-full font-black text-sm border-4 border-black transition-all hover:bg-primary hover:text-black"
               >
-                GENERATOR
+                <span className="relative z-10 flex items-center gap-2">
+                  Start Creating
+                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
+                </span>
+              </button>
+            </div>
+
+            {/* Modern Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden w-12 h-12 rounded-2xl border-3 border-black bg-primary flex items-center justify-center hover:bg-black hover:text-primary transition-colors"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" strokeWidth={2.5} /> : <Menu className="w-6 h-6" strokeWidth={2.5} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Modern Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden mt-4 bg-white border-4 border-black rounded-[28px] overflow-hidden shadow-brutal-lg animate-in slide-in-from-top-5 duration-300">
+            <div className="p-4 space-y-2">
+              <button
+                onClick={() => scrollToSection('generator')}
+                className="w-full text-left px-6 py-4 font-bold text-base rounded-2xl hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
+              >
+                Generator
               </button>
               <button
                 onClick={() => scrollToSection('how-it-works')}
-                className="px-4 py-3 font-bold text-sm text-left hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
+                className="w-full text-left px-6 py-4 font-bold text-base rounded-2xl hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
               >
-                HOW IT WORKS
+                How it Works
               </button>
               <button
                 onClick={() => scrollToSection('faq')}
-                className="px-4 py-3 font-bold text-sm text-left hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
+                className="w-full text-left px-6 py-4 font-bold text-base rounded-2xl hover:bg-primary transition-colors border-2 border-transparent hover:border-black"
               >
                 FAQ
               </button>
+              <div className="pt-2">
+                <button
+                  onClick={() => scrollToSection('generator')}
+                  className="w-full px-6 py-4 bg-black text-primary rounded-2xl font-black text-base border-4 border-black hover:bg-primary hover:text-black transition-colors flex items-center justify-between"
+                >
+                  <span>Start Creating</span>
+                  <ChevronRight className="w-5 h-5" strokeWidth={3} />
+                </button>
+              </div>
             </div>
           </div>
         )}
