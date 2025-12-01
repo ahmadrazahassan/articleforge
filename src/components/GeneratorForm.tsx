@@ -216,7 +216,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                   id="articleType"
                   value={formData.articleType}
                   onChange={(e) => setFormData({ ...formData, articleType: e.target.value as ArticleType })}
-                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-primary/30"
+                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-gray-200"
                   disabled={isLoading}
                 >
                   <option value="review">Review Article</option>
@@ -244,7 +244,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                   id="articleLength"
                   value={formData.articleLength}
                   onChange={(e) => setFormData({ ...formData, articleLength: e.target.value as ArticleLength })}
-                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-primary/30"
+                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-gray-200"
                   disabled={isLoading}
                 >
                   <option value="short">Short (2000-3000 words)</option>
@@ -268,7 +268,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                   id="toneOfVoice"
                   value={formData.toneOfVoice}
                   onChange={(e) => setFormData({ ...formData, toneOfVoice: e.target.value as ToneOfVoice })}
-                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-primary/30"
+                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-gray-200"
                   disabled={isLoading}
                 >
                   <option value="professional">Professional</option>
@@ -294,7 +294,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                   id="language"
                   value={formData.language}
                   onChange={(e) => setFormData({ ...formData, language: e.target.value as Language })}
-                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-primary/30"
+                  className="w-full px-4 py-3.5 border-3 border-black bg-primary/20 focus:outline-none focus:shadow-brutal-sm transition-all font-black cursor-pointer hover:bg-gray-200"
                   disabled={isLoading}
                 >
                   <option value="english">English</option>
@@ -347,7 +347,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                   <button
                     type="button"
                     onClick={addKeyword}
-                    className="px-6 py-3 border-3 border-black bg-primary hover:bg-primary/80 font-black"
+                    className="px-6 py-3 border-3 border-black bg-primary hover:bg-gray-800 hover:text-white font-black"
                     disabled={isLoading}
                   >
                     Add
@@ -417,7 +417,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
                 disabled={isLoading}
                 className="relative flex-1 bg-black text-primary px-8 py-6 font-black text-xl overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 uppercase tracking-wide"
               >
-                <div className="absolute inset-0 bg-primary transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                <div className="absolute inset-0 bg-white transform translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
                 <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
                 <div className="absolute bottom-0 right-0 w-1 h-full bg-primary" />
                 {isLoading ? (

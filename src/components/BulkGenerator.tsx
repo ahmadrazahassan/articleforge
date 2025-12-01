@@ -150,11 +150,11 @@ export default function BulkGenerator({ onComplete }: BulkGeneratorProps) {
             {/* Upload Section */}
             <div className="flex-shrink-0">
               <label className="relative block w-32 h-32 border-4 border-black bg-white hover:bg-black group cursor-pointer overflow-hidden transition-all">
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <Upload className="w-10 h-10 mb-2 group-hover:text-primary transition-colors" />
-                  <span className="text-xs font-black uppercase text-center group-hover:text-primary transition-colors">Import<br/>CSV</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                  <Upload className="w-10 h-10 mb-2 text-black group-hover:text-white transition-colors" />
+                  <span className="text-xs font-black uppercase text-center text-black group-hover:text-white transition-colors">Import<br/>CSV</span>
                 </div>
-                <div className="absolute bottom-0 left-0 w-full h-0 bg-primary group-hover:h-full transition-all duration-300" />
+                <div className="absolute bottom-0 left-0 w-full h-0 bg-black group-hover:h-full transition-all duration-300" />
                 <input type="file" accept=".csv" onChange={importCSV} className="hidden" />
               </label>
             </div>
@@ -256,7 +256,7 @@ export default function BulkGenerator({ onComplete }: BulkGeneratorProps) {
       <div className="flex gap-4">
         <button
           onClick={addItem}
-          className="px-6 py-4 border-4 border-black bg-white hover:bg-primary transition-colors font-black uppercase flex items-center gap-2"
+          className="px-6 py-4 border-4 border-black bg-white hover:bg-gray-800 hover:text-white transition-colors font-black uppercase flex items-center gap-2"
           disabled={isProcessing}
         >
           <Plus className="w-5 h-5" />
@@ -267,7 +267,7 @@ export default function BulkGenerator({ onComplete }: BulkGeneratorProps) {
           className="relative flex-1 px-8 py-5 bg-black text-primary font-black uppercase overflow-hidden group disabled:opacity-50"
           disabled={isProcessing || items.length === 0}
         >
-          <div className="absolute inset-0 bg-primary transform -translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
+          <div className="absolute inset-0 bg-white transform -translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
           <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
           <div className="absolute bottom-0 right-0 w-full h-2 bg-primary" />
           <span className="relative z-10 group-hover:text-black transition-colors">

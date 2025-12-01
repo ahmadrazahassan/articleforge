@@ -184,7 +184,7 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
                     }]);
                   }
                 }}
-                className="px-3 py-2 bg-white border-2 border-black text-xs font-bold hover:bg-primary transition-colors"
+                className="px-3 py-2 bg-white border-2 border-black text-xs font-bold hover:bg-gray-800 hover:text-white transition-colors"
               >
                 {cat}
               </button>
@@ -304,7 +304,7 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
         <div className="flex gap-4 mb-6">
           <button
             onClick={addCategory}
-            className="px-6 py-4 border-4 border-black bg-white hover:bg-primary transition-colors font-black uppercase flex items-center gap-2"
+            className="px-6 py-4 border-4 border-black bg-white hover:bg-gray-800 hover:text-white transition-colors font-black uppercase flex items-center gap-2"
             disabled={isGenerating}
           >
             <Plus className="w-5 h-5" />
@@ -316,7 +316,7 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
             className="relative flex-1 px-8 py-5 bg-black text-primary font-black uppercase overflow-hidden group disabled:opacity-50 flex items-center justify-center gap-3"
             disabled={isGenerating || categories.length === 0}
           >
-            <div className="absolute inset-0 bg-primary transform translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+            <div className="absolute inset-0 bg-white transform translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
             <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
             <div className="absolute bottom-0 right-0 w-full h-2 bg-primary" />
             {isGenerating ? (
@@ -357,7 +357,7 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
               onClick={handleGenerateArticles}
               className="relative w-full px-8 py-7 bg-black text-primary font-black text-xl uppercase overflow-hidden group flex items-center justify-center gap-3"
             >
-              <div className="absolute inset-0 bg-primary transform scale-0 group-hover:scale-100 transition-transform duration-700 origin-center" />
+              <div className="absolute inset-0 bg-white transform scale-0 group-hover:scale-100 transition-transform duration-700 origin-center" />
               <div className="absolute top-0 left-0 w-full h-2 bg-primary" />
               <div className="absolute bottom-0 right-0 w-2 h-full bg-primary" />
               <FileText className="w-7 h-7 relative z-10 group-hover:text-black transition-colors" />
