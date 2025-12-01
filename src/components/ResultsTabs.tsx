@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { GeneratedArticle, CopyState } from '../types';
-import { Copy, Check, FileText, Tag, Code2, Search, Link2, Hash, BookOpen, FolderOpen } from 'lucide-react';
+import { Copy, Check, FileText, Tag, Code2, Search, Link2, Hash, BookOpen, FolderOpen, Download } from 'lucide-react';
+import { ExportService } from '../services/exportService';
 
 interface ResultsTabsProps {
   article: GeneratedArticle;
@@ -13,6 +14,7 @@ export default function ResultsTabs({ article }: ResultsTabsProps) {
     seo: false,
     title: false,
     metaDescription: false,
+    markdown: false,
   });
 
   const copyToClipboard = async (text: string, field: keyof CopyState) => {
@@ -114,22 +116,31 @@ Focus Keywords: ${article.focusKeywords.join(', ')}`;
                 <div className="w-2 h-2 bg-primary border border-black"></div>
                 <p className="text-sm font-black uppercase tracking-wide">Complete HTML Document Ready</p>
               </div>
-              <button
-                onClick={() => copyToClipboard(article.htmlArticle, 'html')}
-                className="px-8 py-4 bg-black text-primary border-4 border-black font-black text-base shadow-brutal hover:bg-primary hover:text-black hover-lift flex items-center gap-3 uppercase tracking-wide"
-              >
-                {copyState.html ? (
-                  <>
-                    <Check className="w-6 h-6" strokeWidth={3} />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-6 h-6" strokeWidth={3} />
-                    <span>Copy HTML</span>
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => ExportService.exportArticle(article, 'html')}
+                  className="px-6 py-3 bg-white border-4 border-black font-black text-sm shadow-brutal-sm hover:bg-primary hover-lift flex items-center gap-2 uppercase"
+                >
+                  <Download className="w-5 h-5" strokeWidth={3} />
+                  <span>Download</span>
+                </button>
+                <button
+                  onClick={() => copyToClipboard(article.htmlArticle, 'html')}
+                  className="px-8 py-4 bg-black text-primary border-4 border-black font-black text-base shadow-brutal hover:bg-primary hover:text-black hover-lift flex items-center gap-3 uppercase tracking-wide"
+                >
+                  {copyState.html ? (
+                    <>
+                      <Check className="w-6 h-6" strokeWidth={3} />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-6 h-6" strokeWidth={3} />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Code Preview */}

@@ -1,180 +1,74 @@
-import { GeneratorFormData, GeneratedArticle } from '../types';
+import { GeneratorFormData, GeneratedArticle, CategorySuggestion } from '../types';
 import OpenAI from 'openai';
+import { SEOService } from './seoService';
 
-// Get API key from environment variable
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
-// Initialize OpenAI client with OpenRouter configuration
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
-  dangerouslyAllowBrowser: true, // Required for client-side usage
+  dangerouslyAllowBrowser: true,
 });
 
-const mockArticleData: GeneratedArticle = {
-  htmlArticle: `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Comprehensive review and analysis of leading cryptocurrency platforms and fintech tools">
-    <title>The Ultimate Guide to Cryptocurrency Reviews and Fintech Tools</title>
-</head>
-<body>
-    <article>
-        <header>
-            <h1>The Ultimate Guide to Cryptocurrency Reviews and Fintech Tools</h1>
-            <p class="intro">In today's rapidly evolving digital financial landscape, choosing the right cryptocurrency platforms and fintech tools has become more critical than ever.</p>
-        </header>
-
-        <section>
-            <h2>Understanding the Cryptocurrency Ecosystem</h2>
-            <p>The cryptocurrency market has grown exponentially over the past decade, transforming from a niche technology into a mainstream financial instrument. This growth has led to an explosion of platforms, exchanges, and tools designed to help users navigate this complex landscape.</p>
-            
-            <h3>Key Components of the Crypto Space</h3>
-            <ul>
-                <li><strong>Exchanges:</strong> Platforms where users can buy, sell, and trade cryptocurrencies</li>
-                <li><strong>Wallets:</strong> Digital storage solutions for securing crypto assets</li>
-                <li><strong>DeFi Platforms:</strong> Decentralized finance applications offering lending, borrowing, and yield farming</li>
-                <li><strong>Analytics Tools:</strong> Software for tracking portfolio performance and market trends</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>Essential Criteria for Evaluating Crypto Platforms</h2>
-            <p>When reviewing cryptocurrency platforms and fintech tools, several critical factors must be considered to ensure you're making informed decisions.</p>
-
-            <h3>Security and Compliance</h3>
-            <p>Security should be your top priority when selecting any cryptocurrency platform. Look for platforms that implement:</p>
-            <ul>
-                <li>Two-factor authentication (2FA)</li>
-                <li>Cold storage for the majority of user funds</li>
-                <li>Regular security audits by reputable third-party firms</li>
-                <li>Compliance with relevant regulatory frameworks</li>
-                <li>Insurance coverage for user deposits</li>
-            </ul>
-
-            <h3>User Experience and Interface</h3>
-            <p>A platform's interface can significantly impact your trading experience. The best platforms offer intuitive navigation, clear data visualization, and responsive customer support.</p>
-        </section>
-
-        <section>
-            <h2>Top Cryptocurrency Exchanges Reviewed</h2>
-            <p>Based on extensive research and user feedback, here are some of the most reliable cryptocurrency exchanges available today.</p>
-
-            <h3>Enterprise-Grade Exchanges</h3>
-            <p>These platforms cater to serious traders and institutions, offering advanced features, deep liquidity, and robust security measures. They typically support a wide range of cryptocurrencies and trading pairs, along with professional-grade charting tools and API access for algorithmic trading.</p>
-
-            <h3>Beginner-Friendly Platforms</h3>
-            <p>For those new to cryptocurrency, certain platforms stand out for their simplicity and educational resources. These exchanges prioritize ease of use while maintaining strong security standards, making them ideal entry points for crypto newcomers.</p>
-        </section>
-
-        <section>
-            <h2>Fintech Tools for Portfolio Management</h2>
-            <p>Managing a cryptocurrency portfolio requires sophisticated tools that can track multiple assets across various platforms and provide real-time insights.</p>
-
-            <h3>Portfolio Trackers</h3>
-            <p>Modern portfolio tracking tools offer features such as:</p>
-            <ul>
-                <li>Real-time price updates and alerts</li>
-                <li>Multi-exchange integration</li>
-                <li>Tax reporting and transaction history</li>
-                <li>Performance analytics and profit/loss calculations</li>
-                <li>Mobile app support for on-the-go monitoring</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>Risk Management and Best Practices</h2>
-            <p>Successful cryptocurrency investing requires disciplined risk management and adherence to proven best practices.</p>
-
-            <h3>Diversification Strategies</h3>
-            <p>Never put all your eggs in one basket. Diversify across different cryptocurrencies, sectors, and platforms to minimize risk exposure. Consider allocating funds to both established cryptocurrencies and promising emerging projects.</p>
-
-            <h3>Security Protocols</h3>
-            <p>Implement strong security measures including hardware wallets for long-term storage, unique passwords for each platform, and regular security audits of your holdings. Stay informed about common scams and phishing attempts in the crypto space.</p>
-        </section>
-
-        <section>
-            <h2>Future Trends in Cryptocurrency and Fintech</h2>
-            <p>The cryptocurrency and fintech industries continue to evolve rapidly, with several emerging trends shaping the future landscape.</p>
-
-            <h3>Decentralized Finance (DeFi)</h3>
-            <p>DeFi platforms are revolutionizing traditional financial services by offering decentralized alternatives to banking, lending, and trading. These platforms operate without intermediaries, providing users with greater control over their assets.</p>
-
-            <h3>Central Bank Digital Currencies (CBDCs)</h3>
-            <p>Governments worldwide are exploring and developing their own digital currencies, which could significantly impact the broader cryptocurrency ecosystem and adoption rates.</p>
-        </section>
-
-        <section>
-            <h2>Conclusion</h2>
-            <p>Navigating the cryptocurrency and fintech landscape requires careful research, due diligence, and ongoing education. By understanding the key features to look for in platforms and tools, implementing strong security practices, and staying informed about industry trends, you can make more confident decisions in this dynamic space.</p>
-            <p>Remember that cryptocurrency investments carry inherent risks, and it's essential to only invest what you can afford to lose. Always conduct thorough research before making any investment decisions, and consider consulting with financial advisors when appropriate.</p>
-        </section>
-    </article>
-</body>
-</html>`,
-  title: 'The Ultimate Guide to Cryptocurrency Reviews and Fintech Tools',
-  category: 'Cryptocurrency',
-  tags: [
-    'cryptocurrency',
-    'fintech',
-    'crypto reviews',
-    'blockchain',
-    'digital currency',
-    'crypto exchanges',
-    'portfolio management',
-    'DeFi',
-    'investment tools',
-    'financial technology'
-  ],
-  metaDescription: 'Comprehensive review and analysis of leading cryptocurrency platforms and fintech tools. Learn how to evaluate exchanges, manage your portfolio, and navigate the crypto landscape safely.',
-  slug: 'ultimate-guide-cryptocurrency-reviews-fintech-tools',
-  focusKeywords: [
-    'cryptocurrency reviews',
-    'fintech tools',
-    'crypto platforms',
-    'blockchain technology',
-    'digital currency exchanges'
-  ]
+// Type for Grok's reasoning details
+type GrokChatMessage = {
+  content: string | null;
+  reasoning_details?: unknown;
 };
 
 function buildPrompt(formData: GeneratorFormData): string {
   const lengthMap = {
     short: '2000-3000 words',
     medium: '3500-5000 words',
-    long: '5500-8000 words'
+    long: '5500-8000 words',
+    'extra-long': '8000-12000 words'
   };
 
   const typeMap = {
     review: 'Professional Review Article',
     guide: 'Comprehensive Expert Guide',
     about: 'Professional About Page',
-    'tool-overview': 'In-Depth Tool/SaaS Analysis'
+    'tool-overview': 'In-Depth Tool/SaaS Analysis',
+    listicle: 'Engaging Listicle Article',
+    comparison: 'Detailed Comparison Article',
+    tutorial: 'Step-by-Step Tutorial',
+    news: 'News Article'
   };
 
-  return `You are a senior full-stack developer and expert SEO content strategist with 15+ years of experience writing authoritative, modern, and professional content. Generate an exceptional, publication-ready ${typeMap[formData.articleType]} for "${formData.websiteName}".
+  let prompt = `You are a senior full-stack developer and expert SEO content strategist with 15+ years of experience. Generate an exceptional, publication-ready ${typeMap[formData.articleType]} for "${formData.websiteName}".
 
 Website Focus: ${formData.websiteDescription}
 
 CRITICAL REQUIREMENTS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📊 CONTENT SPECIFICATIONS:
 - Target Length: ${lengthMap[formData.articleLength]} (MINIMUM - go longer if needed for quality)
 - Tone: ${formData.toneOfVoice}, modern, authoritative, and engaging
 - Language: ${formData.language}
-- Writing Level: Professional industry expert addressing informed readers
+- Writing Level: Professional industry expert addressing informed readers`;
 
-🎯 CONTENT QUALITY STANDARDS:
+  if (formData.targetAudience) {
+    prompt += `\n- Target Audience: ${formData.targetAudience}`;
+  }
+
+  if (formData.customKeywords && formData.customKeywords.length > 0) {
+    prompt += `\n- Required Keywords: ${formData.customKeywords.join(', ')}`;
+  }
+
+  prompt += `\n\n🎯 CONTENT QUALITY STANDARDS:
 1. DEPTH & EXPERTISE: Demonstrate deep subject matter knowledge with specific examples, data points, and industry insights
-2. MODERN APPROACH: Use current 2025 trends, technologies, and best practices
+2. MODERN APPROACH: Use current 2024-2025 trends, technologies, and best practices
 3. PROFESSIONAL STRUCTURE: Clear hierarchy with engaging subheadings that preview content
 4. ACTIONABLE VALUE: Include practical tips, real-world applications, and concrete takeaways
 5. COMPREHENSIVE COVERAGE: Address topic from multiple angles with nuanced perspectives
-6. ENGAGING NARRATIVE: Use storytelling elements, case studies, and relatable scenarios
+6. ENGAGING NARRATIVE: Use storytelling elements, case studies, and relatable scenarios`;
 
-📝 ARTICLE STRUCTURE (MANDATORY):
+  if (formData.includeTables) {
+    prompt += `\n7. DATA VISUALIZATION: Include comparison tables, feature matrices, and data tables where appropriate`;
+  }
+
+  prompt += `\n\n📝 ARTICLE STRUCTURE (MANDATORY):
 
 <article>
   <header>
@@ -267,33 +161,23 @@ EXCELLENCE CHECKLIST:
 ✓ Satisfying conclusion with clear next steps
 
 Generate content that would rank on page 1 of Google and establish the site as an industry authority.`;
+
+  return prompt;
 }
 
-export async function generateArticle(
-  formData: GeneratorFormData
-): Promise<GeneratedArticle> {
-  // If no API key is provided, return mock data
-  if (!OPENROUTER_API_KEY || (typeof OPENROUTER_API_KEY === 'string' && OPENROUTER_API_KEY.trim() === '')) {
-    console.warn('No OpenRouter API key found. Using mock data. Add VITE_OPENROUTER_API_KEY to your .env file.');
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Customize mock data slightly based on input
-    return {
-      ...mockArticleData,
-      title: `Complete Guide to ${formData.websiteName}`,
-      slug: formData.websiteName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-    };
+export async function generateArticle(formData: GeneratorFormData): Promise<GeneratedArticle> {
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY.trim() === '') {
+    throw new Error('No OpenRouter API key found. Add VITE_OPENROUTER_API_KEY to your .env file.');
   }
 
   try {
-    // Generate professional, comprehensive article using Alibaba Tongyi Deep Research model
-    const apiResponse = await client.chat.completions.create({
-      model: 'alibaba/tongyi-deepresearch-30b-a3b:free',
+    // Use Grok 4.1 with advanced reasoning for superior article generation
+    const apiResponse = await (client.chat.completions.create as any)({
+      model: 'x-ai/grok-4.1-fast:free',
       messages: [
         {
           role: 'system',
-          content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive (3000-8000 words), expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON. Every piece you write demonstrates deep expertise, uses current 2024-2025 trends, and provides exceptional value that establishes industry authority.'
+          content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON. Use your advanced reasoning capabilities to create the most valuable, unique, and SEO-optimized content possible.'
         },
         {
           role: 'user',
@@ -302,30 +186,42 @@ export async function generateArticle(
       ],
       temperature: 0.8,
       max_tokens: 16000,
-      response_format: { type: 'json_object' }
+      response_format: { type: 'json_object' },
+      reasoning: { enabled: true } // Enable Grok's advanced reasoning
     });
 
-    // Extract the assistant message
-    const response = apiResponse.choices[0].message;
+    const response = apiResponse.choices[0].message as GrokChatMessage;
     
     if (!response.content) {
       throw new Error('No content received from API');
     }
 
-    // Parse the JSON response
     const result = JSON.parse(response.content);
 
-    // Validate the response structure
     if (!result.htmlArticle || !result.title || !result.category || !result.tags || 
         !result.metaDescription || !result.slug || !result.focusKeywords) {
       throw new Error('Invalid response structure from API');
     }
 
-    return result as GeneratedArticle;
+    const wordCount = SEOService.countWords(result.htmlArticle);
+    const readingTime = SEOService.calculateReadingTime(result.htmlArticle);
+
+    const article: GeneratedArticle = {
+      id: `article-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      ...result,
+      wordCount,
+      readingTime,
+      createdAt: new Date().toISOString(),
+      formData
+    };
+
+    const seoAnalysis = SEOService.analyzeSEO(article);
+    article.seoScore = seoAnalysis.score;
+
+    return article;
   } catch (error) {
     console.error('Error generating article:', error);
     
-    // Provide more specific error messages
     if (error instanceof Error) {
       if (error.message.includes('API key')) {
         throw new Error('Invalid API key. Please check your VITE_OPENROUTER_API_KEY in the .env file.');
@@ -336,5 +232,68 @@ export async function generateArticle(
     }
     
     throw new Error('An unexpected error occurred while generating the article. Please try again.');
+  }
+}
+
+export async function generateBulkArticles(
+  formDataList: GeneratorFormData[],
+  onProgress?: (current: number, total: number) => void
+): Promise<{ results: GeneratedArticle[]; errors: string[] }> {
+  const results: GeneratedArticle[] = [];
+  const errors: string[] = [];
+
+  for (let i = 0; i < formDataList.length; i++) {
+    try {
+      const article = await generateArticle(formDataList[i]);
+      results.push(article);
+      onProgress?.(i + 1, formDataList.length);
+      
+      // Add delay to avoid rate limiting
+      if (i < formDataList.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      errors.push(`Item ${i + 1}: ${errorMsg}`);
+      onProgress?.(i + 1, formDataList.length);
+    }
+  }
+
+  return { results, errors };
+}
+
+export async function suggestCategories(description: string): Promise<CategorySuggestion[]> {
+  if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY.trim() === '') {
+    return [];
+  }
+
+  try {
+    // Use Grok 4.1 for intelligent category suggestions
+    const apiResponse = await (client.chat.completions.create as any)({
+      model: 'x-ai/grok-4.1-fast:free',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON. Use your reasoning to provide the most accurate categorization.'
+        },
+        {
+          role: 'user',
+          content: `Analyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 1000,
+      response_format: { type: 'json_object' },
+      reasoning: { enabled: true }
+    });
+
+    const response = apiResponse.choices[0].message as GrokChatMessage;
+    if (!response.content) return [];
+
+    const result = JSON.parse(response.content);
+    return result.suggestions || [];
+  } catch (error) {
+    console.error('Error suggesting categories:', error);
+    return [];
   }
 }

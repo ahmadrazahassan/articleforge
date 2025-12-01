@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Plus, Minus } from 'lucide-react';
 
 interface FAQItem {
   question: string;
@@ -37,64 +36,95 @@ export default function FAQ() {
   };
 
   return (
-    <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-16">
-          <div className="inline-block mb-4">
-            <div className="px-4 py-2 bg-black text-primary font-bold text-xs tracking-widest border-3 border-black">
-              QUESTIONS & ANSWERS
-            </div>
-          </div>
-          <h2 className="text-5xl sm:text-6xl font-black mb-4 leading-tight">
-            Frequently Asked <span className="italic">Questions</span>
-          </h2>
-          <p className="text-xl font-medium text-gray-700">
-            Everything you need to know about ArticleForge AI
-          </p>
+    <section 
+      id="faq" 
+      className="px-4 sm:px-6 lg:px-8 mb-20"
+      style={{ fontFamily: "'SF Pro Display', 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif" }}
+    >
+      {/* Rounded Background Container */}
+      <div className="bg-primary rounded-[60px] relative overflow-hidden">
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
         </div>
 
-        <div className="space-y-4">
-          {faqs.map((faq, index) => (
-            <div
-              key={index}
-              className={`border-4 border-black transition-all ${
-                openIndex === index ? 'bg-primary shadow-brutal-lg' : 'bg-white shadow-brutal'
-              }`}
+        <div className="max-w-4xl mx-auto relative z-10 py-20 sm:py-24 lg:py-32">
+          {/* Header - Ultra Modern Typography */}
+          <div className="mb-24">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="h-px w-16 bg-black/20" />
+              <span className="text-xs font-bold tracking-[0.3em] uppercase text-black/40">
+                FAQ
+              </span>
+            </div>
+            <h2 
+              className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black leading-[0.85] tracking-tighter mb-8 text-black"
+              style={{ fontFamily: "'Outfit', 'SF Pro Display', sans-serif" }}
             >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full px-6 py-5 flex items-start justify-between text-left group"
-              >
-                <span className="font-black text-lg pr-6 leading-tight">{faq.question}</span>
-                <div className={`flex-shrink-0 w-8 h-8 border-3 border-black flex items-center justify-center transition-all ${
-                  openIndex === index ? 'bg-black text-primary rotate-90' : 'bg-white text-black'
-                }`}>
-                  {openIndex === index ? (
-                    <Minus className="w-5 h-5" strokeWidth={3} />
-                  ) : (
-                    <Plus className="w-5 h-5" strokeWidth={3} />
-                  )}
-                </div>
-              </button>
-              {openIndex === index && (
-                <div className="px-6 pb-6 pt-2">
-                  <div className="border-t-3 border-black pt-4">
-                    <p className="font-medium text-gray-800 leading-relaxed">{faq.answer}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+              <span className="block">Common</span>
+              <span className="block text-black/70">questions</span>
+            </h2>
+            <p className="text-xl sm:text-2xl font-medium text-black/50 max-w-2xl leading-relaxed">
+              Everything you need to know about the platform
+            </p>
+          </div>
 
-        {/* Bottom CTA */}
-        <div className="mt-16 text-center">
-          <div className="inline-block bg-black border-4 border-black p-8 shadow-brutal-lg">
-            <p className="text-primary font-black text-xl mb-4">Still have questions?</p>
-            <p className="text-primary font-medium mb-6">We're here to help you get started</p>
-            <button className="px-8 py-4 bg-primary text-black border-4 border-black font-black text-lg shadow-brutal-sm hover-lift">
-              CONTACT SUPPORT
-            </button>
+          {/* FAQ Items - Minimal List Design */}
+          <div className="space-y-1 mb-24">
+            {faqs.map((faq, index) => (
+              <div
+                key={index}
+                className="group border-t border-black/10 hover:border-black/30 transition-all"
+              >
+                <button
+                  onClick={() => toggleFAQ(index)}
+                  className="w-full py-8 flex items-start justify-between text-left"
+                >
+                  <span 
+                    className="font-black text-2xl sm:text-3xl lg:text-4xl pr-8 leading-tight text-black tracking-tight flex-1"
+                    style={{ fontFamily: "'Outfit', 'SF Pro Display', sans-serif" }}
+                  >
+                    {faq.question}
+                  </span>
+                  <div className="flex-shrink-0 text-6xl font-black text-black/10 group-hover:text-black/20 transition-colors leading-none">
+                    {openIndex === index ? '−' : '+'}
+                  </div>
+                </button>
+                {openIndex === index && (
+                  <div className="pb-8 pr-24">
+                    <p className="text-lg sm:text-xl font-medium text-black/60 leading-relaxed">
+                      {faq.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom CTA - Minimal Design */}
+          <div className="border-t border-black/10 pt-16">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+              <div className="flex-1">
+                <h3 
+                  className="text-4xl sm:text-5xl lg:text-6xl font-black mb-4 text-black leading-tight tracking-tight"
+                  style={{ fontFamily: "'Outfit', 'SF Pro Display', sans-serif" }}
+                >
+                  Still have questions?
+                </h3>
+                <p className="text-xl font-medium text-black/50">
+                  We're here to help you get started
+                </p>
+              </div>
+              <button className="relative px-10 py-5 bg-black text-primary font-black text-lg overflow-hidden group">
+                <div className="absolute inset-0 bg-white transform translate-x-full group-hover:translate-x-0 transition-transform duration-300" />
+                <span className="relative z-10 group-hover:text-black transition-colors">
+                  CONTACT SUPPORT
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
