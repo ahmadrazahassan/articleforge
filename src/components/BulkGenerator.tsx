@@ -115,12 +115,18 @@ export default function BulkGenerator({ onComplete }: BulkGeneratorProps) {
   };
 
   return (
-    <div className="bg-white relative overflow-hidden">
-      {/* Corner Accents */}
-      <div className="absolute top-0 left-0 w-32 h-32 border-r-4 border-b-4 border-black" />
-      <div className="absolute bottom-0 right-0 w-40 h-40 border-l-4 border-t-4 border-primary" />
+    <div className="relative overflow-hidden">
+      {/* Rounded Background Container */}
+      <div className="bg-primary rounded-[60px] relative overflow-hidden">
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
       
-      <div className="relative p-8 sm:p-12">
+        <div className="relative z-10 p-8 sm:p-12">
         {/* Header Section */}
         <div className="mb-10">
           <div className="flex items-start justify-between gap-8 mb-8">
@@ -268,6 +274,7 @@ export default function BulkGenerator({ onComplete }: BulkGeneratorProps) {
             {isProcessing ? 'Generating...' : `Generate ${items.length} Articles`}
           </span>
         </button>
+        </div>
         </div>
       </div>
     </div>

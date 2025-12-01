@@ -1,5 +1,3 @@
-import { FileText, Clipboard, Grid3x3, Layers, Library } from 'lucide-react';
-
 type ViewMode = 'single' | 'smart-paste' | 'category' | 'bulk' | 'library';
 
 interface UltraModernNavProps {
@@ -13,142 +11,124 @@ export default function UltraModernNav({ currentMode, onModeChange, articleCount
     id: ViewMode;
     label: string;
     description: string;
-    icon: React.ReactNode;
-    color: string;
-    stats?: string;
+    number: string;
   }> = [
     {
       id: 'single',
       label: 'Single',
-      description: 'Generate one article with full customization',
-      icon: <FileText className="w-8 h-8" strokeWidth={1.5} />,
-      color: 'from-blue-50 to-blue-100',
+      description: 'One article, full control',
+      number: '01',
     },
     {
       id: 'smart-paste',
       label: 'Smart Paste',
-      description: 'Paste 50-200 websites in any format',
-      icon: <Clipboard className="w-8 h-8" strokeWidth={1.5} />,
-      color: 'from-purple-50 to-purple-100',
+      description: 'Bulk import, any format',
+      number: '02',
     },
     {
       id: 'category',
       label: 'AI Category',
-      description: 'AI generates unique articles by category',
-      icon: <Grid3x3 className="w-8 h-8" strokeWidth={1.5} />,
-      color: 'from-green-50 to-green-100',
+      description: 'Auto-generate by topic',
+      number: '03',
     },
     {
       id: 'bulk',
       label: 'Manual Bulk',
-      description: 'Add items manually with full control',
-      icon: <Layers className="w-8 h-8" strokeWidth={1.5} />,
-      color: 'from-orange-50 to-orange-100',
+      description: 'Manual entry, batch mode',
+      number: '04',
     },
     {
       id: 'library',
       label: 'Library',
-      description: `Manage and organize ${articleCount} articles`,
-      icon: <Library className="w-8 h-8" strokeWidth={1.5} />,
-      color: 'from-red-50 to-red-100',
-      stats: articleCount.toString(),
+      description: `${articleCount} articles stored`,
+      number: '05',
     },
   ];
 
   return (
-    <div className="w-full">
-      {/* Desktop Grid Navigation */}
-      <div className="hidden md:block">
-        <div className="grid grid-cols-5 gap-4 p-8 bg-white border-b-4 border-black">
-          {modes.map((mode) => (
-            <button
-              key={mode.id}
-              onClick={() => onModeChange(mode.id)}
-              className={`relative group transition-all duration-300 ${
-                currentMode === mode.id ? 'scale-105' : 'hover:scale-102'
-              }`}
-            >
-              {/* Card Background */}
-              <div
-                className={`absolute inset-0 border-4 transition-all duration-300 ${
-                  currentMode === mode.id
-                    ? 'border-black bg-black'
-                    : 'border-black bg-white group-hover:bg-gray-50'
+    <div 
+      className="w-full px-4 sm:px-6 lg:px-8 mb-12"
+      style={{ fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif" }}
+    >
+      <div className="max-w-7xl mx-auto">
+        {/* Desktop Horizontal List */}
+        <div className="hidden md:block">
+          <div className="space-y-1">
+            {modes.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => onModeChange(mode.id)}
+                className={`w-full group border-t transition-all ${
+                  currentMode === mode.id 
+                    ? 'border-black bg-black/5' 
+                    : 'border-black/10 hover:border-black/30 hover:bg-black/5'
                 }`}
-              />
+              >
+                <div className="py-8 flex items-center gap-8">
+                  {/* Number */}
+                  <div className={`text-7xl font-black leading-none transition-colors ${
+                    currentMode === mode.id ? 'text-primary' : 'text-black/5 group-hover:text-black/10'
+                  }`}>
+                    {mode.number}
+                  </div>
 
-              {/* Card Content */}
-              <div className="relative p-6 text-left">
-                {/* Icon */}
-                <div
-                  className={`mb-4 transition-colors duration-300 ${
-                    currentMode === mode.id ? 'text-primary' : 'text-black'
-                  }`}
-                >
-                  {mode.icon}
+                  {/* Content */}
+                  <div className="flex-1 text-left">
+                    <h3 className={`text-3xl sm:text-4xl font-black leading-tight tracking-tight mb-2 transition-colors ${
+                      currentMode === mode.id ? 'text-black' : 'text-black/70 group-hover:text-black'
+                    }`}>
+                      {mode.label}
+                    </h3>
+                    <p className="text-lg font-medium text-black/50">
+                      {mode.description}
+                    </p>
+                  </div>
+
+                  {/* Indicator */}
+                  <div className={`w-12 h-12 border-2 flex items-center justify-center transition-all ${
+                    currentMode === mode.id 
+                      ? 'border-primary bg-primary' 
+                      : 'border-black/10 group-hover:border-black/30'
+                  }`}>
+                    {currentMode === mode.id && (
+                      <div className="w-3 h-3 bg-black" />
+                    )}
+                  </div>
                 </div>
+              </button>
+            ))}
+          </div>
+        </div>
 
-                {/* Label */}
-                <h3
-                  className={`font-black text-lg uppercase tracking-wide mb-2 transition-colors duration-300 ${
-                    currentMode === mode.id ? 'text-primary' : 'text-black'
-                  }`}
-                >
+        {/* Mobile Horizontal Scroll */}
+        <div className="md:hidden overflow-x-auto">
+          <div className="flex gap-3 pb-4">
+            {modes.map((mode) => (
+              <button
+                key={mode.id}
+                onClick={() => onModeChange(mode.id)}
+                className={`flex-shrink-0 w-64 border-2 p-6 transition-all ${
+                  currentMode === mode.id
+                    ? 'border-black bg-black text-primary'
+                    : 'border-black/20 bg-white text-black hover:border-black/40'
+                }`}
+              >
+                <div className={`text-5xl font-black mb-4 leading-none ${
+                  currentMode === mode.id ? 'text-primary/20' : 'text-black/5'
+                }`}>
+                  {mode.number}
+                </div>
+                <h3 className="text-2xl font-black mb-2 leading-tight">
                   {mode.label}
                 </h3>
-
-                {/* Description */}
-                <p
-                  className={`text-xs font-medium leading-tight transition-colors duration-300 ${
-                    currentMode === mode.id ? 'text-primary/80' : 'text-gray-600'
-                  }`}
-                >
+                <p className={`text-sm font-medium ${
+                  currentMode === mode.id ? 'text-primary/70' : 'text-black/60'
+                }`}>
                   {mode.description}
                 </p>
-
-                {/* Stats Badge */}
-                {mode.stats && (
-                  <div
-                    className={`mt-4 inline-block px-3 py-1 border-2 font-black text-sm transition-colors duration-300 ${
-                      currentMode === mode.id
-                        ? 'border-primary bg-primary text-black'
-                        : 'border-black bg-white text-black'
-                    }`}
-                  >
-                    {mode.stats}
-                  </div>
-                )}
-
-                {/* Active Indicator */}
-                {currentMode === mode.id && (
-                  <div className="absolute top-2 right-2 w-3 h-3 bg-primary border-2 border-primary" />
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile Carousel Navigation */}
-      <div className="md:hidden overflow-x-auto border-b-4 border-black bg-white">
-        <div className="flex gap-3 p-4 min-w-min">
-          {modes.map((mode) => (
-            <button
-              key={mode.id}
-              onClick={() => onModeChange(mode.id)}
-              className={`flex-shrink-0 w-40 px-4 py-3 border-4 transition-all ${
-                currentMode === mode.id
-                  ? 'border-black bg-black text-primary'
-                  : 'border-black bg-white text-black'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                {mode.icon}
-                <span className="font-black text-sm uppercase">{mode.label}</span>
-              </div>
-              <p className="text-xs font-medium text-left">{mode.description}</p>
-            </button>
-          ))}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

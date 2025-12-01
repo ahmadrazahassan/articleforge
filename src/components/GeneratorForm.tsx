@@ -82,14 +82,18 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
   };
 
   return (
-    <div className="relative bg-white overflow-hidden">
-      {/* Geometric Background Pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-        <div className="absolute top-0 left-0 w-64 h-64 border-[40px] border-black rotate-45 -translate-x-32 -translate-y-32" />
-        <div className="absolute bottom-0 right-0 w-96 h-96 border-[60px] border-black rounded-full translate-x-48 translate-y-48" />
-      </div>
+    <div className="relative overflow-hidden">
+      {/* Rounded Background Container */}
+      <div className="bg-primary rounded-[60px] relative overflow-hidden">
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
       
-      <div className="relative z-10">
+        <div className="relative z-10">
         {/* Ultra-Modern Header */}
         <div className="relative bg-black text-white p-8 sm:p-12 overflow-hidden">
           {/* Accent Shapes */}
@@ -440,6 +444,7 @@ export default function GeneratorForm({ onGenerate, isLoading }: GeneratorFormPr
             </div>
           </div>
           </form>
+        </div>
         </div>
       </div>
     </div>

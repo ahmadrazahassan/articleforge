@@ -64,12 +64,18 @@ export default function SmartPasteGenerator({ onGenerate }: SmartPasteGeneratorP
   const examples = ParserService.getExampleFormats();
 
   return (
-    <div className="bg-white overflow-hidden relative">
-      {/* Diagonal Accent */}
-      <div className="absolute top-0 right-0 w-1/3 h-2 bg-black" />
-      <div className="absolute bottom-0 left-0 w-1/4 h-1 bg-primary" />
+    <div className="relative overflow-hidden">
+      {/* Rounded Background Container */}
+      <div className="bg-primary rounded-[60px] relative overflow-hidden">
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
       
-      <div className="relative bg-white p-8 sm:p-12">
+        <div className="relative z-10 p-8 sm:p-12">
         <div className="flex items-start gap-8 mb-8">
           {/* Icon Section */}
           <div className="relative flex-shrink-0">
@@ -271,6 +277,7 @@ export default function SmartPasteGenerator({ onGenerate }: SmartPasteGeneratorP
             </button>
           </>
         )}
+        </div>
       </div>
     </div>
   );

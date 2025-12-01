@@ -90,16 +90,20 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
   ];
 
   return (
-    <div className="bg-white relative overflow-hidden">
-      {/* Geometric Pattern Background */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-        <div className="absolute top-10 right-10 w-80 h-80 border-[50px] border-black" />
-        <div className="absolute bottom-10 left-10 w-60 h-60 border-[40px] border-black rotate-45" />
-      </div>
+    <div className="relative overflow-hidden">
+      {/* Rounded Background Container */}
+      <div className="bg-primary rounded-[60px] relative overflow-hidden">
+        {/* Subtle Grid Background */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)',
+            backgroundSize: '50px 50px'
+          }} />
+        </div>
       
-      <div className="relative z-10">
-        {/* Modern Header with Asymmetric Design */}
-        <div className="relative p-8 sm:p-12 bg-white">
+        <div className="relative z-10">
+          {/* Modern Header */}
+          <div className="relative p-8 sm:p-12">
           <div className="flex items-start gap-8 mb-8">
             {/* Stacked Icon Design */}
             <div className="relative flex-shrink-0">
@@ -156,12 +160,10 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
               </div>
             </div>
           </div>
-        </div>
-        
-        <div className="h-1 bg-black" />
-      </div>
+          
+          <div className="h-px bg-black/10 mx-8" />
 
-      <div className="p-6 relative z-10">
+          <div className="p-8 sm:p-12">
         {/* Popular Categories Quick Select */}
         <div className="mb-6 bg-primary/10 border-3 border-black p-4 relative z-10">
           <p className="font-black text-sm uppercase mb-3">Quick Select Popular Categories:</p>
@@ -363,6 +365,9 @@ export default function CategoryGenerator({ onGenerate }: CategoryGeneratorProps
             </button>
           </div>
         )}
+          </div>
+        </div>
+        </div>
       </div>
     </div>
   );
