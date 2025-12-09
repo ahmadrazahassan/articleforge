@@ -71,6 +71,10 @@ function extractJSON(content: string): any {
 }
 
 function buildPrompt(formData: GeneratorFormData): string {
+  const timestamp = Date.now();
+  const randomSeed = Math.floor(Math.random() * 1000000);
+  const uniqueId = `${timestamp}-${randomSeed}`;
+  
   const lengthMap = {
     short: '2000-3000 words',
     medium: '3500-5000 words',
@@ -89,58 +93,240 @@ function buildPrompt(formData: GeneratorFormData): string {
     news: 'News Article'
   };
 
-  let prompt = `Generate an exceptional, publication-ready ${typeMap[formData.articleType]} for "${formData.websiteName}".
+  const currentDate = new Date();
+  const month = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
 
-Website Focus: ${formData.websiteDescription}
+  return `You are an elite content strategist and senior technical writer at a Fortune 500 digital media company. You create world-class, publication-ready content that ranks #1 on Google and drives millions in revenue.
 
-SPECIFICATIONS:
-- Target Length: ${lengthMap[formData.articleLength]} (MINIMUM)
-- Tone: ${formData.toneOfVoice}, modern, authoritative
-- Language: ${formData.language}`;
+UNIQUENESS SEED: ${uniqueId}
+GENERATION CONTEXT: ${month} ${year}
 
-  if (formData.targetAudience) {
-    prompt += `\n- Target Audience: ${formData.targetAudience}`;
-  }
+═══════════════════════════════════════════════════════════════════════════════
+🎯 ARTICLE MISSION
+═══════════════════════════════════════════════════════════════════════════════
 
-  if (formData.customKeywords && formData.customKeywords.length > 0) {
-    prompt += `\n- Keywords: ${formData.customKeywords.join(', ')}`;
-  }
+Create a ${typeMap[formData.articleType]} for: "${formData.websiteName}"
+Focus: ${formData.websiteDescription}
 
-  prompt += `\n\nCONTENT REQUIREMENTS:
-1. Deep subject matter knowledge with examples and data
-2. Current 2024-2025 trends and best practices
-3. Professional structure with engaging subheadings
-4. Actionable tips and real-world applications
-5. Comprehensive coverage from multiple angles
-6. Storytelling elements and case studies`;
+Target Length: ${lengthMap[formData.articleLength]} (EXCEED if value demands)
+Tone: ${formData.toneOfVoice} | Language: ${formData.language}${formData.targetAudience ? `\nAudience: ${formData.targetAudience}` : ''}${formData.customKeywords && formData.customKeywords.length > 0 ? `\nKeywords: ${formData.customKeywords.join(', ')}` : ''}
 
-  if (formData.includeTables) {
-    prompt += `\n7. Include comparison tables and data visualizations`;
-  }
+═══════════════════════════════════════════════════════════════════════════════
+🏆 ENTERPRISE CONTENT STANDARDS
+═══════════════════════════════════════════════════════════════════════════════
 
-  prompt += `\n\nARTICLE STRUCTURE:
-- Compelling H1 with power words
-- Engaging introduction (200-400 words)
-- 6-10 major sections with H2 headings
-- Each section: 300-600 words minimum
-- 2-4 H3 subsections per H2
-- FAQ section with 5-8 questions
-- Conclusion with actionable next steps (150-250 words)
+UNIQUENESS MANDATE:
+• Generate 100% ORIGINAL content - never repeat common patterns
+• Use SPECIFIC examples, data points, and case studies
+• Include UNIQUE insights not found in generic articles
+• Reference REAL tools, companies, methodologies (${year} context)
+• Explore NICHE angles and unconventional perspectives
 
-Use semantic HTML: <h1>, <h2>, <h3>, <p>, <strong>, <em>, <ul>, <ol>, <table>, <blockquote>
+DEPTH & EXPERTISE:
+• Demonstrate subject matter mastery with technical precision
+• Include industry statistics, research findings, expert quotes
+• Provide actionable frameworks and step-by-step methodologies
+• Address edge cases, advanced scenarios, and pro-level insights
+• Use real-world examples from Fortune 500 companies
 
-RESPOND WITH VALID JSON ONLY (no markdown, no code blocks):
+MODERN ${year} APPROACH:
+• Latest trends, technologies, and best practices
+• AI/ML integration, automation, and digital transformation
+• Sustainability, accessibility, and ethical considerations
+• Remote-first, mobile-first, and cloud-native perspectives
+• Emerging technologies: Web3, quantum computing, edge computing
+
+═══════════════════════════════════════════════════════════════════════════════
+📐 ULTRA-MODERN HTML STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+<article class="prose prose-lg max-w-none" itemscope itemtype="https://schema.org/Article">
+  
+  <!-- Hero Section -->
+  <header class="article-header mb-12">
+    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4" itemprop="headline">
+      [Compelling, keyword-rich H1 with power words]
+    </h1>
+    <div class="article-meta flex items-center gap-4 text-gray-600 mb-6">
+      <time datetime="${year}-${month}" itemprop="datePublished">${month} ${year}</time>
+      <span>•</span>
+      <span itemprop="wordCount">[X] min read</span>
+    </div>
+    <p class="text-xl text-gray-700 leading-relaxed" itemprop="description">
+      [Engaging 2-3 sentence hook that captures attention and previews value]
+    </p>
+  </header>
+
+  <!-- Table of Contents (for long articles) -->
+  <nav class="toc bg-gray-50 p-6 rounded-lg mb-10" aria-label="Table of Contents">
+    <h2 class="text-lg font-semibold mb-3">What You'll Learn</h2>
+    <ul class="space-y-2">
+      [5-8 clickable section links]
+    </ul>
+  </nav>
+
+  <!-- Introduction -->
+  <section class="intro mb-10" itemprop="articleBody">
+    <h2 class="text-3xl font-bold mb-4">Introduction</h2>
+    <p class="lead text-lg mb-4">[Context-setting paragraph]</p>
+    <p>[Problem statement and opportunity]</p>
+    <p>[Article value proposition]</p>
+    <div class="key-takeaways bg-blue-50 border-l-4 border-blue-500 p-6 my-6">
+      <h3 class="font-semibold mb-2">🎯 Key Takeaways</h3>
+      <ul class="list-disc pl-5 space-y-1">
+        [3-5 bullet points of main insights]
+      </ul>
+    </div>
+  </section>
+
+  <!-- Main Content Sections (6-10 sections) -->
+  <section class="content-section mb-10">
+    <h2 class="text-3xl font-bold mb-6">[Descriptive H2 with Keywords]</h2>
+    <p class="mb-4">[Opening paragraph with hook]</p>
+    
+    <h3 class="text-2xl font-semibold mt-6 mb-3">[Specific H3 Subsection]</h3>
+    <p class="mb-4">[Detailed content with examples]</p>
+    
+    <div class="example-box bg-green-50 p-6 rounded-lg my-6">
+      <h4 class="font-semibold mb-2">💡 Real-World Example</h4>
+      <p>[Specific case study or example]</p>
+    </div>
+    
+    <ul class="list-disc pl-6 space-y-2 mb-4">
+      <li><strong>Point 1:</strong> Detailed explanation</li>
+      <li><strong>Point 2:</strong> Detailed explanation</li>
+    </ul>${formData.includeTables ? `
+    
+    <div class="overflow-x-auto my-6">
+      <table class="min-w-full border-collapse border border-gray-300">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border border-gray-300 px-4 py-2">Feature</th>
+            <th class="border border-gray-300 px-4 py-2">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          [Comparison data rows]
+        </tbody>
+      </table>
+    </div>` : ''}
+    
+    <blockquote class="border-l-4 border-gray-300 pl-4 italic my-6">
+      "[Expert quote or key insight]" - [Source/Expert Name]
+    </blockquote>
+  </section>
+
+  <!-- Pro Tips Section -->
+  <section class="pro-tips bg-yellow-50 p-8 rounded-lg mb-10">
+    <h2 class="text-3xl font-bold mb-6">⚡ Pro Tips & Advanced Strategies</h2>
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="tip-card">
+        <h3 class="font-semibold mb-2">🎯 Tip 1: [Specific Tip]</h3>
+        <p>[Detailed explanation]</p>
+      </div>
+      [3-5 more tip cards]
+    </div>
+  </section>
+
+  <!-- Common Mistakes -->
+  <section class="mistakes mb-10">
+    <h2 class="text-3xl font-bold mb-6">🚫 Common Pitfalls to Avoid</h2>
+    <div class="space-y-4">
+      <div class="mistake-item border-l-4 border-red-500 pl-4">
+        <h3 class="font-semibold text-red-700">Mistake: [Common Error]</h3>
+        <p class="text-gray-700">Solution: [How to avoid it]</p>
+      </div>
+      [4-6 more mistakes]
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq mb-10" itemscope itemtype="https://schema.org/FAQPage">
+    <h2 class="text-3xl font-bold mb-6">❓ Frequently Asked Questions</h2>
+    <div class="space-y-6">
+      <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <h3 class="text-xl font-semibold mb-2" itemprop="name">[Question]</h3>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">[Detailed 80-150 word answer]</p>
+        </div>
+      </div>
+      [6-8 more FAQ items]
+    </div>
+  </section>
+
+  <!-- Conclusion -->
+  <section class="conclusion mb-10">
+    <h2 class="text-3xl font-bold mb-6">🎯 Conclusion & Next Steps</h2>
+    <p class="mb-4">[Summary of key insights]</p>
+    <p class="mb-4">[Reinforcement of main value]</p>
+    <div class="next-steps bg-blue-50 p-6 rounded-lg">
+      <h3 class="font-semibold mb-3">🚀 Action Items</h3>
+      <ol class="list-decimal pl-5 space-y-2">
+        <li>[Specific action step 1]</li>
+        <li>[Specific action step 2]</li>
+        <li>[Specific action step 3]</li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Resources -->
+  <section class="resources bg-gray-50 p-6 rounded-lg">
+    <h3 class="font-semibold mb-3">📚 Additional Resources</h3>
+    <ul class="space-y-2">
+      <li>• [Relevant tool/resource 1]</li>
+      <li>• [Relevant tool/resource 2]</li>
+      <li>• [Relevant tool/resource 3]</li>
+    </ul>
+  </section>
+
+</article>
+
+═══════════════════════════════════════════════════════════════════════════════
+✍️ WRITING EXCELLENCE
+═══════════════════════════════════════════════════════════════════════════════
+
+• Lead with value in every paragraph - no fluff
+• Use active voice and strong, specific verbs
+• Include transition sentences between sections
+• Break up text with subheadings every 200-300 words
+• Use short paragraphs (3-5 sentences max)
+• Include specific numbers, percentages, and data
+• Add visual hierarchy with formatting
+• Use semantic HTML5 elements properly
+• Include ARIA labels for accessibility
+• Add schema.org markup for rich snippets
+
+═══════════════════════════════════════════════════════════════════════════════
+🔍 SEO OPTIMIZATION
+═══════════════════════════════════════════════════════════════════════════════
+
+• Natural keyword integration (2-3% density)
+• LSI keywords and semantic variations
+• Question-based H2/H3 for voice search
+• Featured snippet-ready content (lists, tables, definitions)
+• Internal linking opportunities (mark with HTML comments)
+• External authority links (mark with HTML comments)
+• Image alt text placeholders
+• Meta tags optimization
+
+═══════════════════════════════════════════════════════════════════════════════
+📊 REQUIRED JSON RESPONSE
+═══════════════════════════════════════════════════════════════════════════════
+
+Return ONLY valid JSON (no markdown, no code blocks, no extra text):
+
 {
-  "htmlArticle": "Complete HTML article content",
-  "title": "SEO-optimized title (50-65 characters)",
-  "category": "Primary category",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8", "tag9", "tag10"],
-  "metaDescription": "Compelling meta description (150-160 characters)",
-  "slug": "seo-url-slug",
-  "focusKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
-}`;
+  "htmlArticle": "[Complete modern HTML with Tailwind classes as shown above]",
+  "title": "[Compelling 50-65 char title with power words and keywords]",
+  "category": "[Specific primary category]",
+  "tags": ["[10-15 highly relevant tags including long-tail keywords]"],
+  "metaDescription": "[Persuasive 150-160 char description with CTA]",
+  "slug": "[seo-optimized-url-slug-with-keywords]",
+  "focusKeywords": ["[5-7 strategic keywords including primary and LSI terms]"]
+}
 
-  return prompt;
+CRITICAL: Generate UNIQUE content every time. Use the seed ${uniqueId} to ensure complete originality. Never repeat patterns or generic content. This must be publication-ready for a Fortune 500 company.`;
 }
 
 export async function generateArticle(formData: GeneratorFormData): Promise<GeneratedArticle> {
