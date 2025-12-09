@@ -17,6 +17,27 @@ type ORChatMessage = {
   reasoning_details?: unknown;
 };
 
+// Robust JSON extraction from AI responses
+function extractJSON(content: string): string {
+  if (!content) return '{}';
+  
+  // Try to extract from markdown code blocks first
+  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    content = codeBlockMatch[1].trim();
+  }
+  
+  // Find the first { and last } to extract JSON object
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    content = content.substring(firstBrace, lastBrace + 1);
+  }
+  
+  return content.trim();
+}
+
 // Retry helper with exponential backoff for rate limits
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
@@ -224,13 +245,8 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
       throw new Error('No content received from API');
     }
 
-    // Extract JSON from markdown code blocks if present
-    let jsonContent = response.content;
-    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-    if (jsonMatch) {
-      jsonContent = jsonMatch[1];
-    }
-
+    // Extract and parse JSON from response
+    const jsonContent = extractJSON(response.content);
     const result = JSON.parse(jsonContent);
 
     if (!result.htmlArticle || !result.title || !result.category || !result.tags || 
@@ -320,13 +336,8 @@ export async function suggestCategories(description: string): Promise<CategorySu
     const response = apiResponse.choices[0].message as ORChatMessage;
     if (!response.content) return [];
 
-    // Extract JSON from markdown code blocks if present
-    let jsonContent = response.content;
-    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
-    if (jsonMatch) {
-      jsonContent = jsonMatch[1];
-    }
-
+    // Extract and parse JSON from response
+    const jsonContent = extractJSON(response.content);
     const result = JSON.parse(jsonContent);
     return result.suggestions || [];
   } catch (error) {
