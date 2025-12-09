@@ -18,8 +18,8 @@ const openai = new OpenAI({
 
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries = 3,
-  initialDelay = 2000
+  maxRetries = 5,
+  initialDelay = 3000
 ): Promise<T> {
   let lastError: Error | undefined;
   
@@ -29,9 +29,12 @@ async function retryWithBackoff<T>(
     } catch (error: any) {
       lastError = error;
       
-      if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('rate limit')) {
+      // Handle both rate limits and server errors
+      if (error?.status === 429 || error?.status === 500 || 
+          error?.message?.includes('429') || error?.message?.includes('500') ||
+          error?.message?.includes('rate limit') || error?.message?.includes('Internal Server Error')) {
         const delay = initialDelay * Math.pow(2, i);
-        console.log(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+        console.log(`API error (${error?.status || 'unknown'}). Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
         await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
@@ -307,7 +310,7 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'qwen/qwen3-coder:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: [
           {
             role: 'user',
@@ -376,7 +379,7 @@ export async function generateBulkArticles(
       onProgress?.(i + 1, formDataList.length);
       
       if (i < formDataList.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -396,7 +399,7 @@ export async function suggestCategories(description: string): Promise<CategorySu
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'qwen/qwen3-coder:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: [
           {
             role: 'user',

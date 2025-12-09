@@ -85,10 +85,10 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Mistral Devstral for superior article idea generation
+      // Use Mistral 7B Instruct for superior article idea generation
       const response = await retryWithBackoff(() =>
         openai.chat.completions.create({
-          model: 'mistralai/devstral-2512:free',
+          model: 'mistralai/mistral-7b-instruct:free',
           messages: [
             {
               role: 'user',
