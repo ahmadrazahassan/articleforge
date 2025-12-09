@@ -203,25 +203,17 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use GPT OSS 120B with reasoning for superior article generation
+    // Use KAT Coder Pro for superior article generation
     const apiResponse = await retryWithBackoff(() => 
       client.chat.completions.create({
-        model: 'openai/gpt-oss-120b:free',
+        model: 'kwaipilot/kat-coder-pro:free',
         messages: [
           {
-            role: 'system',
-            content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.'
-          },
-          {
             role: 'user',
-            content: buildPrompt(formData)
+            content: `You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.\n\n${buildPrompt(formData)}`
           }
-        ],
-        temperature: 0.8,
-        max_tokens: 16000,
-        response_format: { type: 'json_object' },
-        reasoning: { enabled: true }
-      } as any)
+        ]
+      })
     );
 
     const response = apiResponse.choices[0].message;
@@ -302,25 +294,17 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use GPT OSS 120B with reasoning for intelligent category suggestions
+    // Use KAT Coder Pro for intelligent category suggestions
     const apiResponse = await retryWithBackoff(() =>
       client.chat.completions.create({
-        model: 'openai/gpt-oss-120b:free',
+        model: 'kwaipilot/kat-coder-pro:free',
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.'
-          },
-          {
             role: 'user',
-            content: `Analyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
+            content: `You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.\n\nAnalyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
           }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-        response_format: { type: 'json_object' },
-        reasoning: { enabled: true }
-      } as any)
+        ]
+      })
     );
 
     const response = apiResponse.choices[0].message;

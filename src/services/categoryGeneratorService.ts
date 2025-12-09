@@ -59,25 +59,17 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use GPT OSS 120B with reasoning for superior article idea generation
+      // Use KAT Coder Pro for superior article idea generation
       const response = await retryWithBackoff(() =>
         client.chat.completions.create({
-          model: 'openai/gpt-oss-120b:free',
+          model: 'kwaipilot/kat-coder-pro:free',
           messages: [
             {
-              role: 'system',
-              content: 'You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.'
-            },
-            {
               role: 'user',
-              content: prompt
+              content: `You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.\n\n${prompt}`
             }
-          ],
-          temperature: 0.9, // Higher temperature for more creativity
-          max_tokens: 4000,
-          response_format: { type: 'json_object' },
-          reasoning: { enabled: true }
-        } as any)
+          ]
+        })
       );
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
