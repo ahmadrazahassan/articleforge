@@ -16,7 +16,6 @@ const openai = new OpenAI({
   },
 });
 
-// Retry helper with exponential backoff for rate limits
 async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxRetries = 3,
@@ -44,17 +43,14 @@ async function retryWithBackoff<T>(
   throw lastError || new Error('Max retries exceeded');
 }
 
-// Extract JSON from AI response (handles markdown code blocks)
 function extractJSON(content: string): any {
   if (!content) return {};
   
-  // Remove markdown code blocks
   const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (codeBlockMatch) {
     content = codeBlockMatch[1].trim();
   }
   
-  // Find JSON object boundaries
   const firstBrace = content.indexOf('{');
   const lastBrace = content.lastIndexOf('}');
   
@@ -97,236 +93,210 @@ function buildPrompt(formData: GeneratorFormData): string {
   const month = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
 
-  return `You are an elite content strategist and senior technical writer at a Fortune 500 digital media company. You create world-class, publication-ready content that ranks #1 on Google and drives millions in revenue.
+  return `You are a senior content strategist at a leading digital media company. Create a professional, modern ${typeMap[formData.articleType]} that matches the quality of TechCrunch, The Verge, or Harvard Business Review.
 
 UNIQUENESS SEED: ${uniqueId}
-GENERATION CONTEXT: ${month} ${year}
+CONTEXT: ${month} ${year}
 
-═══════════════════════════════════════════════════════════════════════════════
-🎯 ARTICLE MISSION
-═══════════════════════════════════════════════════════════════════════════════
-
-Create a ${typeMap[formData.articleType]} for: "${formData.websiteName}"
+ARTICLE BRIEF:
+Title: "${formData.websiteName}"
 Focus: ${formData.websiteDescription}
+Length: ${lengthMap[formData.articleLength]}
+Tone: ${formData.toneOfVoice}
+Language: ${formData.language}${formData.targetAudience ? `\nAudience: ${formData.targetAudience}` : ''}${formData.customKeywords && formData.customKeywords.length > 0 ? `\nKeywords: ${formData.customKeywords.join(', ')}` : ''}
 
-Target Length: ${lengthMap[formData.articleLength]} (EXCEED if value demands)
-Tone: ${formData.toneOfVoice} | Language: ${formData.language}${formData.targetAudience ? `\nAudience: ${formData.targetAudience}` : ''}${formData.customKeywords && formData.customKeywords.length > 0 ? `\nKeywords: ${formData.customKeywords.join(', ')}` : ''}
+CONTENT STANDARDS:
+- Write with authority and expertise
+- Use data, statistics, and real examples
+- Include specific company names, tools, and methodologies
+- Reference current ${year} trends and technologies
+- Provide actionable insights and frameworks
+- Use professional, engaging language
+- NO emojis or casual symbols
+- NO generic content - be specific and unique
 
-═══════════════════════════════════════════════════════════════════════════════
-🏆 ENTERPRISE CONTENT STANDARDS
-═══════════════════════════════════════════════════════════════════════════════
+MODERN HTML STRUCTURE:
+Create a clean, professional article with these sections:
 
-UNIQUENESS MANDATE:
-• Generate 100% ORIGINAL content - never repeat common patterns
-• Use SPECIFIC examples, data points, and case studies
-• Include UNIQUE insights not found in generic articles
-• Reference REAL tools, companies, methodologies (${year} context)
-• Explore NICHE angles and unconventional perspectives
-
-DEPTH & EXPERTISE:
-• Demonstrate subject matter mastery with technical precision
-• Include industry statistics, research findings, expert quotes
-• Provide actionable frameworks and step-by-step methodologies
-• Address edge cases, advanced scenarios, and pro-level insights
-• Use real-world examples from Fortune 500 companies
-
-MODERN ${year} APPROACH:
-• Latest trends, technologies, and best practices
-• AI/ML integration, automation, and digital transformation
-• Sustainability, accessibility, and ethical considerations
-• Remote-first, mobile-first, and cloud-native perspectives
-• Emerging technologies: Web3, quantum computing, edge computing
-
-═══════════════════════════════════════════════════════════════════════════════
-📐 ULTRA-MODERN HTML STRUCTURE
-═══════════════════════════════════════════════════════════════════════════════
-
-<article class="prose prose-lg max-w-none" itemscope itemtype="https://schema.org/Article">
+<article class="max-w-4xl mx-auto px-6 py-12">
   
-  <!-- Hero Section -->
-  <header class="article-header mb-12">
-    <h1 class="text-4xl md:text-5xl font-bold leading-tight mb-4" itemprop="headline">
-      [Compelling, keyword-rich H1 with power words]
+  <header class="mb-12">
+    <h1 class="text-4xl font-bold text-gray-900 leading-tight mb-4">
+      [Compelling headline with keywords]
     </h1>
-    <div class="article-meta flex items-center gap-4 text-gray-600 mb-6">
-      <time datetime="${year}-${month}" itemprop="datePublished">${month} ${year}</time>
-      <span>•</span>
-      <span itemprop="wordCount">[X] min read</span>
+    <div class="flex items-center gap-4 text-sm text-gray-600 mb-6">
+      <time datetime="${year}-${month.substring(0,3)}">${month} ${year}</time>
+      <span class="text-gray-400">•</span>
+      <span>[X] min read</span>
     </div>
-    <p class="text-xl text-gray-700 leading-relaxed" itemprop="description">
-      [Engaging 2-3 sentence hook that captures attention and previews value]
+    <p class="text-xl text-gray-700 leading-relaxed">
+      [Engaging 2-3 sentence summary that hooks the reader]
     </p>
   </header>
 
-  <!-- Table of Contents (for long articles) -->
-  <nav class="toc bg-gray-50 p-6 rounded-lg mb-10" aria-label="Table of Contents">
-    <h2 class="text-lg font-semibold mb-3">What You'll Learn</h2>
-    <ul class="space-y-2">
-      [5-8 clickable section links]
+  <nav class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-12">
+    <h2 class="text-lg font-semibold text-gray-900 mb-4">Table of Contents</h2>
+    <ul class="space-y-2 text-gray-700">
+      [5-8 section links]
     </ul>
   </nav>
 
-  <!-- Introduction -->
-  <section class="intro mb-10" itemprop="articleBody">
-    <h2 class="text-3xl font-bold mb-4">Introduction</h2>
-    <p class="lead text-lg mb-4">[Context-setting paragraph]</p>
-    <p>[Problem statement and opportunity]</p>
-    <p>[Article value proposition]</p>
-    <div class="key-takeaways bg-blue-50 border-l-4 border-blue-500 p-6 my-6">
-      <h3 class="font-semibold mb-2">🎯 Key Takeaways</h3>
-      <ul class="list-disc pl-5 space-y-1">
-        [3-5 bullet points of main insights]
+  <section class="prose prose-lg max-w-none mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Introduction</h2>
+    <p class="text-lg text-gray-800 mb-4">[Opening paragraph with context]</p>
+    <p class="mb-4">[Problem statement]</p>
+    <p class="mb-4">[Article value proposition]</p>
+    
+    <div class="bg-blue-50 border-l-4 border-blue-600 p-6 my-8">
+      <h3 class="font-semibold text-gray-900 mb-3">Key Takeaways</h3>
+      <ul class="space-y-2 text-gray-800">
+        [3-5 main insights]
       </ul>
     </div>
   </section>
 
-  <!-- Main Content Sections (6-10 sections) -->
-  <section class="content-section mb-10">
-    <h2 class="text-3xl font-bold mb-6">[Descriptive H2 with Keywords]</h2>
-    <p class="mb-4">[Opening paragraph with hook]</p>
+  <section class="prose prose-lg max-w-none mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">[Section Title with Keywords]</h2>
+    <p class="mb-4">[Opening paragraph]</p>
     
-    <h3 class="text-2xl font-semibold mt-6 mb-3">[Specific H3 Subsection]</h3>
+    <h3 class="text-2xl font-semibold text-gray-900 mt-8 mb-4">[Subsection Title]</h3>
     <p class="mb-4">[Detailed content with examples]</p>
     
-    <div class="example-box bg-green-50 p-6 rounded-lg my-6">
-      <h4 class="font-semibold mb-2">💡 Real-World Example</h4>
-      <p>[Specific case study or example]</p>
+    <div class="bg-green-50 border border-green-200 rounded-lg p-6 my-8">
+      <h4 class="font-semibold text-gray-900 mb-3">Case Study</h4>
+      <p class="text-gray-800">[Real-world example with specific company/data]</p>
     </div>
     
-    <ul class="list-disc pl-6 space-y-2 mb-4">
-      <li><strong>Point 1:</strong> Detailed explanation</li>
-      <li><strong>Point 2:</strong> Detailed explanation</li>
+    <ul class="space-y-3 my-6">
+      <li class="flex items-start">
+        <span class="text-blue-600 mr-2">▸</span>
+        <span><strong>Point 1:</strong> Detailed explanation</span>
+      </li>
+      [More list items]
     </ul>${formData.includeTables ? `
     
-    <div class="overflow-x-auto my-6">
-      <table class="min-w-full border-collapse border border-gray-300">
-        <thead class="bg-gray-100">
+    <div class="overflow-x-auto my-8">
+      <table class="min-w-full divide-y divide-gray-200 border border-gray-200">
+        <thead class="bg-gray-50">
           <tr>
-            <th class="border border-gray-300 px-4 py-2">Feature</th>
-            <th class="border border-gray-300 px-4 py-2">Details</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Feature</th>
+            <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Details</th>
           </tr>
         </thead>
-        <tbody>
-          [Comparison data rows]
+        <tbody class="bg-white divide-y divide-gray-200">
+          [Table rows with data]
         </tbody>
       </table>
     </div>` : ''}
     
-    <blockquote class="border-l-4 border-gray-300 pl-4 italic my-6">
-      "[Expert quote or key insight]" - [Source/Expert Name]
+    <blockquote class="border-l-4 border-gray-300 pl-6 py-2 italic text-gray-700 my-8">
+      "[Expert insight or key quote]" — [Source/Expert Name]
     </blockquote>
   </section>
 
-  <!-- Pro Tips Section -->
-  <section class="pro-tips bg-yellow-50 p-8 rounded-lg mb-10">
-    <h2 class="text-3xl font-bold mb-6">⚡ Pro Tips & Advanced Strategies</h2>
+  <section class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-8 mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Expert Insights & Best Practices</h2>
     <div class="grid md:grid-cols-2 gap-6">
-      <div class="tip-card">
-        <h3 class="font-semibold mb-2">🎯 Tip 1: [Specific Tip]</h3>
-        <p>[Detailed explanation]</p>
+      <div class="bg-white rounded-lg p-6 shadow-sm">
+        <h3 class="font-semibold text-gray-900 mb-2">[Insight Title]</h3>
+        <p class="text-gray-700">[Detailed explanation]</p>
       </div>
-      [3-5 more tip cards]
+      [3-5 more insight cards]
     </div>
   </section>
 
-  <!-- Common Mistakes -->
-  <section class="mistakes mb-10">
-    <h2 class="text-3xl font-bold mb-6">🚫 Common Pitfalls to Avoid</h2>
-    <div class="space-y-4">
-      <div class="mistake-item border-l-4 border-red-500 pl-4">
-        <h3 class="font-semibold text-red-700">Mistake: [Common Error]</h3>
-        <p class="text-gray-700">Solution: [How to avoid it]</p>
-      </div>
-      [4-6 more mistakes]
-    </div>
-  </section>
-
-  <!-- FAQ Section -->
-  <section class="faq mb-10" itemscope itemtype="https://schema.org/FAQPage">
-    <h2 class="text-3xl font-bold mb-6">❓ Frequently Asked Questions</h2>
+  <section class="mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Common Challenges & Solutions</h2>
     <div class="space-y-6">
-      <div class="faq-item" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-        <h3 class="text-xl font-semibold mb-2" itemprop="name">[Question]</h3>
-        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
-          <p itemprop="text">[Detailed 80-150 word answer]</p>
-        </div>
+      <div class="border-l-4 border-red-500 bg-red-50 p-6 rounded-r-lg">
+        <h3 class="font-semibold text-red-900 mb-2">Challenge: [Specific Problem]</h3>
+        <p class="text-gray-800">Solution: [Actionable fix]</p>
+      </div>
+      [4-6 more challenge/solution pairs]
+    </div>
+  </section>
+
+  <section class="mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Frequently Asked Questions</h2>
+    <div class="space-y-6">
+      <div class="border-b border-gray-200 pb-6">
+        <h3 class="text-xl font-semibold text-gray-900 mb-3">[Question]</h3>
+        <p class="text-gray-700">[Comprehensive 80-150 word answer]</p>
       </div>
       [6-8 more FAQ items]
     </div>
   </section>
 
-  <!-- Conclusion -->
-  <section class="conclusion mb-10">
-    <h2 class="text-3xl font-bold mb-6">🎯 Conclusion & Next Steps</h2>
-    <p class="mb-4">[Summary of key insights]</p>
-    <p class="mb-4">[Reinforcement of main value]</p>
-    <div class="next-steps bg-blue-50 p-6 rounded-lg">
-      <h3 class="font-semibold mb-3">🚀 Action Items</h3>
-      <ol class="list-decimal pl-5 space-y-2">
-        <li>[Specific action step 1]</li>
-        <li>[Specific action step 2]</li>
-        <li>[Specific action step 3]</li>
-      </ol>
+  <section class="mb-12">
+    <h2 class="text-3xl font-bold text-gray-900 mb-6">Conclusion & Next Steps</h2>
+    <p class="text-lg text-gray-800 mb-4">[Summary of key points]</p>
+    <p class="mb-6">[Final thoughts and future outlook]</p>
+    
+    <div class="bg-blue-600 text-white rounded-lg p-8">
+      <h3 class="text-2xl font-bold mb-4">Ready to Get Started?</h3>
+      <p class="mb-6">[Compelling CTA message]</p>
+      <div class="space-y-3">
+        <div class="flex items-center">
+          <span class="mr-3">1.</span>
+          <span>[Action step 1]</span>
+        </div>
+        <div class="flex items-center">
+          <span class="mr-3">2.</span>
+          <span>[Action step 2]</span>
+        </div>
+        <div class="flex items-center">
+          <span class="mr-3">3.</span>
+          <span>[Action step 3]</span>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Resources -->
-  <section class="resources bg-gray-50 p-6 rounded-lg">
-    <h3 class="font-semibold mb-3">📚 Additional Resources</h3>
-    <ul class="space-y-2">
-      <li>• [Relevant tool/resource 1]</li>
-      <li>• [Relevant tool/resource 2]</li>
-      <li>• [Relevant tool/resource 3]</li>
+  <section class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+    <h3 class="font-semibold text-gray-900 mb-4">Additional Resources</h3>
+    <ul class="space-y-2 text-gray-700">
+      <li><a href="#" class="text-blue-600 hover:underline">[Resource 1]</a></li>
+      <li><a href="#" class="text-blue-600 hover:underline">[Resource 2]</a></li>
+      <li><a href="#" class="text-blue-600 hover:underline">[Resource 3]</a></li>
     </ul>
   </section>
 
 </article>
 
-═══════════════════════════════════════════════════════════════════════════════
-✍️ WRITING EXCELLENCE
-═══════════════════════════════════════════════════════════════════════════════
+WRITING GUIDELINES:
+- Use active voice and strong verbs
+- Include specific data and statistics
+- Reference real companies and tools
+- Add transition sentences between sections
+- Keep paragraphs concise (3-5 sentences)
+- Use professional language throughout
+- Include schema.org markup where appropriate
+- Add proper semantic HTML5 elements
+- Ensure mobile-responsive design
+- NO emojis or casual symbols
 
-• Lead with value in every paragraph - no fluff
-• Use active voice and strong, specific verbs
-• Include transition sentences between sections
-• Break up text with subheadings every 200-300 words
-• Use short paragraphs (3-5 sentences max)
-• Include specific numbers, percentages, and data
-• Add visual hierarchy with formatting
-• Use semantic HTML5 elements properly
-• Include ARIA labels for accessibility
-• Add schema.org markup for rich snippets
+SEO OPTIMIZATION:
+- Natural keyword integration (2-3% density)
+- LSI keywords and semantic variations
+- Question-based headings for voice search
+- Featured snippet-ready content
+- Internal linking opportunities (HTML comments)
+- External authority links (HTML comments)
+- Proper heading hierarchy (H1 > H2 > H3)
+- Meta description optimization
 
-═══════════════════════════════════════════════════════════════════════════════
-🔍 SEO OPTIMIZATION
-═══════════════════════════════════════════════════════════════════════════════
-
-• Natural keyword integration (2-3% density)
-• LSI keywords and semantic variations
-• Question-based H2/H3 for voice search
-• Featured snippet-ready content (lists, tables, definitions)
-• Internal linking opportunities (mark with HTML comments)
-• External authority links (mark with HTML comments)
-• Image alt text placeholders
-• Meta tags optimization
-
-═══════════════════════════════════════════════════════════════════════════════
-📊 REQUIRED JSON RESPONSE
-═══════════════════════════════════════════════════════════════════════════════
-
-Return ONLY valid JSON (no markdown, no code blocks, no extra text):
-
+RESPOND WITH VALID JSON ONLY (no markdown, no code blocks):
 {
-  "htmlArticle": "[Complete modern HTML with Tailwind classes as shown above]",
-  "title": "[Compelling 50-65 char title with power words and keywords]",
-  "category": "[Specific primary category]",
-  "tags": ["[10-15 highly relevant tags including long-tail keywords]"],
-  "metaDescription": "[Persuasive 150-160 char description with CTA]",
-  "slug": "[seo-optimized-url-slug-with-keywords]",
-  "focusKeywords": ["[5-7 strategic keywords including primary and LSI terms]"]
+  "htmlArticle": "[Complete modern HTML as specified above]",
+  "title": "[Professional 50-65 character title with keywords]",
+  "category": "[Specific category]",
+  "tags": ["[10-15 relevant tags]"],
+  "metaDescription": "[Compelling 150-160 character description]",
+  "slug": "[seo-optimized-url-slug]",
+  "focusKeywords": ["[5-7 strategic keywords]"]
 }
 
-CRITICAL: Generate UNIQUE content every time. Use the seed ${uniqueId} to ensure complete originality. Never repeat patterns or generic content. This must be publication-ready for a Fortune 500 company.`;
+CRITICAL: Generate completely unique content using seed ${uniqueId}. This must be publication-ready for a professional media company. NO emojis. Professional tone only.`;
 }
 
 export async function generateArticle(formData: GeneratorFormData): Promise<GeneratedArticle> {
@@ -337,7 +307,7 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'mistralai/devstral-2512:free',
+        model: 'qwen/qwen3-coder:free',
         messages: [
           {
             role: 'user',
@@ -426,7 +396,7 @@ export async function suggestCategories(description: string): Promise<CategorySu
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'mistralai/devstral-2512:free',
+        model: 'qwen/qwen3-coder:free',
         messages: [
           {
             role: 'user',
