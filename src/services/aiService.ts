@@ -3,69 +3,18 @@ import OpenAI from 'openai';
 import { SEOService } from './seoService';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
+const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
-const client = new OpenAI({
+const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
+  defaultHeaders: {
+    'HTTP-Referer': SITE_URL,
+    'X-Title': SITE_NAME,
+  },
 });
-
-// Type for OpenRouter chat message with reasoning details
-type ORChatMessage = {
-  role: 'user' | 'assistant' | 'system';
-  content: string | null;
-  reasoning_details?: unknown;
-};
-
-// Robust JSON extraction and parsing from AI responses
-function extractAndParseJSON(content: string): any {
-  if (!content) return {};
-  
-  // Try to extract from markdown code blocks first
-  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  if (codeBlockMatch) {
-    content = codeBlockMatch[1].trim();
-  }
-  
-  // Find the first { and last } to extract JSON object
-  const firstBrace = content.indexOf('{');
-  const lastBrace = content.lastIndexOf('}');
-  
-  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-    content = content.substring(firstBrace, lastBrace + 1);
-  }
-  
-  content = content.trim();
-  
-  // Try to parse JSON with error recovery
-  try {
-    return JSON.parse(content);
-  } catch (error) {
-    console.error('Initial JSON parse failed, attempting repair...', error);
-    
-    // Try to fix common JSON issues
-    try {
-      // Fix unescaped newlines in strings
-      let fixed = content.replace(/([^\\])\n/g, '$1\\n');
-      // Fix unescaped quotes in HTML attributes
-      fixed = fixed.replace(/([^\\])"/g, (match, p1, offset) => {
-        // Check if we're inside a JSON string value
-        const beforeMatch = fixed.substring(0, offset);
-        const quoteCount = (beforeMatch.match(/"/g) || []).length;
-        // If odd number of quotes, we're inside a string, escape it
-        if (quoteCount % 2 === 1) {
-          return p1 + '\\"';
-        }
-        return match;
-      });
-      
-      return JSON.parse(fixed);
-    } catch (secondError) {
-      console.error('JSON repair failed:', secondError);
-      throw new Error('Unable to parse AI response as valid JSON. Please try again.');
-    }
-  }
-}
 
 // Retry helper with exponential backoff for rate limits
 async function retryWithBackoff<T>(
@@ -81,7 +30,6 @@ async function retryWithBackoff<T>(
     } catch (error: any) {
       lastError = error;
       
-      // Check if it's a rate limit error
       if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('rate limit')) {
         const delay = initialDelay * Math.pow(2, i);
         console.log(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
@@ -89,7 +37,6 @@ async function retryWithBackoff<T>(
         continue;
       }
       
-      // If it's not a rate limit error, throw immediately
       throw error;
     }
   }
@@ -97,7 +44,31 @@ async function retryWithBackoff<T>(
   throw lastError || new Error('Max retries exceeded');
 }
 
-
+// Extract JSON from AI response (handles markdown code blocks)
+function extractJSON(content: string): any {
+  if (!content) return {};
+  
+  // Remove markdown code blocks
+  const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (codeBlockMatch) {
+    content = codeBlockMatch[1].trim();
+  }
+  
+  // Find JSON object boundaries
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    content = content.substring(firstBrace, lastBrace + 1);
+  }
+  
+  try {
+    return JSON.parse(content.trim());
+  } catch (error) {
+    console.error('JSON parse error:', error);
+    throw new Error('Failed to parse AI response. Please try again.');
+  }
+}
 
 function buildPrompt(formData: GeneratorFormData): string {
   const lengthMap = {
@@ -118,140 +89,56 @@ function buildPrompt(formData: GeneratorFormData): string {
     news: 'News Article'
   };
 
-  let prompt = `You are a senior full-stack developer and expert SEO content strategist with 15+ years of experience. Generate an exceptional, publication-ready ${typeMap[formData.articleType]} for "${formData.websiteName}".
+  let prompt = `Generate an exceptional, publication-ready ${typeMap[formData.articleType]} for "${formData.websiteName}".
 
 Website Focus: ${formData.websiteDescription}
 
-CRITICAL REQUIREMENTS:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📊 CONTENT SPECIFICATIONS:
-- Target Length: ${lengthMap[formData.articleLength]} (MINIMUM - go longer if needed for quality)
-- Tone: ${formData.toneOfVoice}, modern, authoritative, and engaging
-- Language: ${formData.language}
-- Writing Level: Professional industry expert addressing informed readers`;
+SPECIFICATIONS:
+- Target Length: ${lengthMap[formData.articleLength]} (MINIMUM)
+- Tone: ${formData.toneOfVoice}, modern, authoritative
+- Language: ${formData.language}`;
 
   if (formData.targetAudience) {
     prompt += `\n- Target Audience: ${formData.targetAudience}`;
   }
 
   if (formData.customKeywords && formData.customKeywords.length > 0) {
-    prompt += `\n- Required Keywords: ${formData.customKeywords.join(', ')}`;
+    prompt += `\n- Keywords: ${formData.customKeywords.join(', ')}`;
   }
 
-  prompt += `\n\n🎯 CONTENT QUALITY STANDARDS:
-1. DEPTH & EXPERTISE: Demonstrate deep subject matter knowledge with specific examples, data points, and industry insights
-2. MODERN APPROACH: Use current 2024-2025 trends, technologies, and best practices
-3. PROFESSIONAL STRUCTURE: Clear hierarchy with engaging subheadings that preview content
-4. ACTIONABLE VALUE: Include practical tips, real-world applications, and concrete takeaways
-5. COMPREHENSIVE COVERAGE: Address topic from multiple angles with nuanced perspectives
-6. ENGAGING NARRATIVE: Use storytelling elements, case studies, and relatable scenarios`;
+  prompt += `\n\nCONTENT REQUIREMENTS:
+1. Deep subject matter knowledge with examples and data
+2. Current 2024-2025 trends and best practices
+3. Professional structure with engaging subheadings
+4. Actionable tips and real-world applications
+5. Comprehensive coverage from multiple angles
+6. Storytelling elements and case studies`;
 
   if (formData.includeTables) {
-    prompt += `\n7. DATA VISUALIZATION: Include comparison tables, feature matrices, and data tables where appropriate`;
+    prompt += `\n7. Include comparison tables and data visualizations`;
   }
 
-  prompt += `\n\n📝 ARTICLE STRUCTURE (MANDATORY):
+  prompt += `\n\nARTICLE STRUCTURE:
+- Compelling H1 with power words
+- Engaging introduction (200-400 words)
+- 6-10 major sections with H2 headings
+- Each section: 300-600 words minimum
+- 2-4 H3 subsections per H2
+- FAQ section with 5-8 questions
+- Conclusion with actionable next steps (150-250 words)
 
-<article>
-  <header>
-    • Compelling H1 with power words
-    • Engaging meta description preview paragraph (100-150 words)
-    • Key statistics or hook statement
-  </header>
+Use semantic HTML: <h1>, <h2>, <h3>, <p>, <strong>, <em>, <ul>, <ol>, <table>, <blockquote>
 
-  <section id="introduction">
-    • Context setting (200-400 words)
-    • Problem statement or opportunity
-    • Article value proposition
-    • Quick navigation preview of what's covered
-  </section>
-
-  <section id="main-content">
-    • 6-10 major sections with descriptive H2 headings
-    • Each section: 300-600 words minimum
-    • 2-4 H3 subsections per H2
-    • Mix of paragraphs, lists, tables, and callouts
-    • Include: examples, statistics, quotes, case studies
-    • Use semantic HTML: <strong>, <em>, <blockquote>, <code>, <ul>, <ol>, <table>
-  </section>
-
-  <section id="advanced-insights">
-    • Expert tips and pro strategies
-    • Common pitfalls and how to avoid them
-    • Industry trends and future outlook
-  </section>
-
-  <section id="faqs">
-    • 5-8 frequently asked questions with detailed answers
-    • Each answer: 80-150 words
-  </section>
-
-  <section id="conclusion">
-    • Summary of key points (150-250 words)
-    • Actionable next steps
-    • Future considerations
-  </section>
-</article>
-
-🎨 FORMATTING EXCELLENCE:
-- Use semantic HTML5 elements properly
-- Add descriptive class names where appropriate
-- Include data attributes for better structure
-- Use proper heading hierarchy (never skip levels)
-- Add alt-friendly image placeholders with descriptive comments
-- Include meta tags for SEO, Open Graph, and Twitter Cards
-- Add structured data hints in HTML comments
-
-💡 WRITING STYLE:
-- Lead with value in every paragraph
-- Use transition sentences between sections
-- Include relevant statistics and data (cite with [Source: Industry Report 2024])
-- Add practical examples and use cases
-- Use active voice and strong verbs
-- Break up long paragraphs (max 4-5 sentences)
-- Include bullet points for scannability
-- Add emphasis with <strong> and <em> strategically
-
-🔍 SEO OPTIMIZATION:
-- Natural keyword integration (avoid stuffing)
-- LSI keywords and semantic variations
-- Internal linking opportunities (mark with HTML comments)
-- External resource suggestions (mark with HTML comments)
-- Featured snippet-ready content (lists, tables, definitions)
-- Question-based H2/H3 for voice search
-
-⚠️ CRITICAL JSON FORMATTING RULES:
-- You MUST return ONLY valid JSON (no markdown, no code blocks, no extra text)
-- ALL quotes inside HTML must be escaped as \\" 
-- ALL newlines inside HTML must be escaped as \\n
-- ALL backslashes must be escaped as \\\\
-- The htmlArticle field must be a single-line escaped string
-- Do NOT wrap response in \`\`\`json or any markdown
-
-JSON RESPONSE FORMAT (RETURN ONLY THIS, NOTHING ELSE):
+RESPOND WITH VALID JSON ONLY (no markdown, no code blocks):
 {
-  "htmlArticle": "Complete HTML as single escaped string with \\" for quotes and \\n for newlines",
-  "title": "Compelling, keyword-rich title (50-65 characters)",
-  "category": "Specific primary category",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "metaDescription": "Persuasive meta description (150-160 characters)",
-  "slug": "seo-optimized-url-slug",
-  "focusKeywords": ["keyword1", "keyword2", "keyword3"]
-}
-
-EXCELLENCE CHECKLIST:
-✓ Article is comprehensive, authoritative, and publication-ready
-✓ Modern examples and current industry standards (2024-2025)
-✓ Professional tone with personality and engagement
-✓ Exceeds minimum word count with substantial value
-✓ Perfect HTML structure with semantic markup
-✓ Natural SEO integration without keyword stuffing
-✓ Actionable insights readers can immediately apply
-✓ Engaging introduction that hooks readers
-✓ Satisfying conclusion with clear next steps
-
-Generate content that would rank on page 1 of Google and establish the site as an industry authority.`;
+  "htmlArticle": "Complete HTML article content",
+  "title": "SEO-optimized title (50-65 characters)",
+  "category": "Primary category",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5", "tag6", "tag7", "tag8", "tag9", "tag10"],
+  "metaDescription": "Compelling meta description (150-160 characters)",
+  "slug": "seo-url-slug",
+  "focusKeywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+}`;
 
   return prompt;
 }
@@ -262,32 +149,25 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use Amazon Nova 2 Lite with reasoning for superior article generation
-    const apiResponse = await retryWithBackoff(() => 
-      client.chat.completions.create({
-        model: 'amazon/nova-2-lite-v1:free',
+    const completion = await retryWithBackoff(() =>
+      openai.chat.completions.create({
+        model: 'mistralai/devstral-2512:free',
         messages: [
           {
-            role: 'user' as const,
-            content: `You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights.
-
-CRITICAL: You MUST respond with ONLY valid, properly escaped JSON. No markdown code blocks, no extra text, just pure JSON. All quotes in HTML must be escaped as \\", all newlines as \\n.
-
-${buildPrompt(formData)}`
+            role: 'user',
+            content: buildPrompt(formData)
           }
-        ],
-        reasoning: { enabled: true }
-      } as any)
+        ]
+      })
     );
 
-    const response = apiResponse.choices[0].message as ORChatMessage;
+    const response = completion.choices[0].message;
     
     if (!response.content) {
       throw new Error('No content received from API');
     }
 
-    // Extract and parse JSON from response
-    const result = extractAndParseJSON(response.content);
+    const result = extractJSON(response.content);
 
     if (!result.htmlArticle || !result.title || !result.category || !result.tags || 
         !result.metaDescription || !result.slug || !result.focusKeywords) {
@@ -298,7 +178,7 @@ ${buildPrompt(formData)}`
     const readingTime = SEOService.calculateReadingTime(result.htmlArticle);
 
     const article: GeneratedArticle = {
-      id: `article-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `article-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       ...result,
       wordCount,
       readingTime,
@@ -316,13 +196,13 @@ ${buildPrompt(formData)}`
     if (error instanceof Error) {
       if (error.message.includes('API key')) {
         throw new Error('Invalid API key. Please check your VITE_OPENROUTER_API_KEY in the .env file.');
-      } else if (error.message.includes('JSON')) {
-        throw new Error('Failed to parse AI response. The model may have returned invalid JSON.');
+      } else if (error.message.includes('JSON') || error.message.includes('parse')) {
+        throw new Error('Failed to parse AI response. Please try again.');
       }
       throw new Error(`Failed to generate article: ${error.message}`);
     }
     
-    throw new Error('An unexpected error occurred while generating the article. Please try again.');
+    throw new Error('An unexpected error occurred. Please try again.');
   }
 }
 
@@ -339,7 +219,6 @@ export async function generateBulkArticles(
       results.push(article);
       onProgress?.(i + 1, formDataList.length);
       
-      // Add delay to avoid rate limiting
       if (i < formDataList.length - 1) {
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
@@ -359,25 +238,35 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use Amazon Nova 2 Lite with reasoning for intelligent category suggestions
-    const apiResponse = await retryWithBackoff(() =>
-      client.chat.completions.create({
-        model: 'amazon/nova-2-lite-v1:free',
+    const completion = await retryWithBackoff(() =>
+      openai.chat.completions.create({
+        model: 'mistralai/devstral-2512:free',
         messages: [
           {
-            role: 'user' as const,
-            content: `You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.\n\nAnalyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
+            role: 'user',
+            content: `Analyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each.
+
+Website: "${description}"
+
+Respond with VALID JSON ONLY (no markdown):
+{
+  "suggestions": [
+    {
+      "category": "Category Name",
+      "confidence": 0.95,
+      "relatedTags": ["tag1", "tag2", "tag3"]
+    }
+  ]
+}`
           }
-        ],
-        reasoning: { enabled: true }
-      } as any)
+        ]
+      })
     );
 
-    const response = apiResponse.choices[0].message as ORChatMessage;
+    const response = completion.choices[0].message;
     if (!response.content) return [];
 
-    // Extract and parse JSON from response
-    const result = extractAndParseJSON(response.content);
+    const result = extractJSON(response.content);
     return result.suggestions || [];
   } catch (error) {
     console.error('Error suggesting categories:', error);

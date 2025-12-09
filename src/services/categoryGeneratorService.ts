@@ -2,31 +2,30 @@ import { CategoryGenerationConfig, GeneratorFormData } from '../types';
 import OpenAI from 'openai';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
+const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
-const client = new OpenAI({
+const openai = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
+  defaultHeaders: {
+    'HTTP-Referer': SITE_URL,
+    'X-Title': SITE_NAME,
+  },
 });
 
-// Type for OpenRouter chat message with reasoning details
-type ORChatMessage = {
-  role: 'user' | 'assistant' | 'system';
-  content: string | null;
-  reasoning_details?: unknown;
-};
-
-// Robust JSON extraction and parsing from AI responses
-function extractAndParseJSON(content: string): any {
+// Extract JSON from AI response (handles markdown code blocks)
+function extractJSON(content: string): any {
   if (!content) return {};
   
-  // Try to extract from markdown code blocks first
+  // Remove markdown code blocks
   const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
   if (codeBlockMatch) {
     content = codeBlockMatch[1].trim();
   }
   
-  // Find the first { and last } to extract JSON object
+  // Find JSON object boundaries
   const firstBrace = content.indexOf('{');
   const lastBrace = content.lastIndexOf('}');
   
@@ -34,35 +33,11 @@ function extractAndParseJSON(content: string): any {
     content = content.substring(firstBrace, lastBrace + 1);
   }
   
-  content = content.trim();
-  
-  // Try to parse JSON with error recovery
   try {
-    return JSON.parse(content);
+    return JSON.parse(content.trim());
   } catch (error) {
-    console.error('Initial JSON parse failed, attempting repair...', error);
-    
-    // Try to fix common JSON issues
-    try {
-      // Fix unescaped newlines in strings
-      let fixed = content.replace(/([^\\])\n/g, '$1\\n');
-      // Fix unescaped quotes in HTML attributes
-      fixed = fixed.replace(/([^\\])"/g, (match, p1, offset) => {
-        // Check if we're inside a JSON string value
-        const beforeMatch = fixed.substring(0, offset);
-        const quoteCount = (beforeMatch.match(/"/g) || []).length;
-        // If odd number of quotes, we're inside a string, escape it
-        if (quoteCount % 2 === 1) {
-          return p1 + '\\"';
-        }
-        return match;
-      });
-      
-      return JSON.parse(fixed);
-    } catch (secondError) {
-      console.error('JSON repair failed:', secondError);
-      throw new Error('Unable to parse AI response as valid JSON. Please try again.');
-    }
+    console.error('JSON parse error:', error);
+    throw new Error('Failed to parse AI response. Please try again.');
   }
 }
 
@@ -110,25 +85,23 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Amazon Nova 2 Lite with reasoning for superior article idea generation
+      // Use Mistral Devstral for superior article idea generation
       const response = await retryWithBackoff(() =>
-        client.chat.completions.create({
-          model: 'amazon/nova-2-lite-v1:free',
+        openai.chat.completions.create({
+          model: 'mistralai/devstral-2512:free',
           messages: [
             {
-              role: 'user' as const,
-              content: `You are a world-class content strategist, innovation consultant, and SEO expert with deep knowledge of 2025-2026 trends across all industries. You specialize in generating breakthrough, highly specific, and unique article ideas that stand out from generic content. You think creatively, explore niche angles, and always deliver fresh perspectives. Always respond with valid JSON.\n\n${prompt}`
+              role: 'user',
+              content: `You are a world-class content strategist and SEO expert. Generate breakthrough, highly specific, and unique article ideas. Always respond with valid JSON (no markdown).\n\n${prompt}`
             }
-          ],
-          reasoning: { enabled: true },
-          temperature: 0.95
-        } as any)
+          ]
+        })
       );
 
-      const responseMessage = response.choices[0].message as ORChatMessage;
+      const responseMessage = response.choices[0].message;
       
       // Extract and parse JSON from response
-      const result = extractAndParseJSON(responseMessage.content || '{}');
+      const result = extractJSON(responseMessage.content || '{}');
       
       if (!result.articles || !Array.isArray(result.articles)) {
         throw new Error('Invalid response format');
