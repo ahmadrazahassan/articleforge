@@ -29,9 +29,9 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use DeepSeek R1T Chimera for superior article idea generation
+      // Use Google Gemma 3 27B for superior article idea generation
       const response = await client.chat.completions.create({
-        model: 'tngtech/deepseek-r1t-chimera:free',
+        model: 'google/gemma-3-27b-it:free',
         messages: [
           {
             role: 'system',

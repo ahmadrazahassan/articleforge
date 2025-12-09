@@ -173,9 +173,9 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use DeepSeek R1T Chimera for superior article generation
+    // Use Google Gemma 3 27B for superior article generation
     const apiResponse = await client.chat.completions.create({
-      model: 'tngtech/deepseek-r1t-chimera:free',
+      model: 'google/gemma-3-27b-it:free',
       messages: [
         {
           role: 'system',
@@ -269,9 +269,9 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use DeepSeek R1T Chimera for intelligent category suggestions
+    // Use Google Gemma 3 27B for intelligent category suggestions
     const apiResponse = await client.chat.completions.create({
-      model: 'tngtech/deepseek-r1t-chimera:free',
+      model: 'google/gemma-3-27b-it:free',
       messages: [
         {
           role: 'system',
