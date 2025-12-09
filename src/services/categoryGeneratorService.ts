@@ -59,10 +59,10 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Google Gemini 2.0 Flash Exp for superior article idea generation with retry logic
+      // Use GPT OSS 120B with reasoning for superior article idea generation
       const response = await retryWithBackoff(() =>
         client.chat.completions.create({
-          model: 'google/gemini-2.0-flash-exp:free',
+          model: 'openai/gpt-oss-120b:free',
           messages: [
             {
               role: 'system',
@@ -75,8 +75,9 @@ export class CategoryGeneratorService {
           ],
           temperature: 0.9, // Higher temperature for more creativity
           max_tokens: 4000,
-          response_format: { type: 'json_object' }
-        })
+          response_format: { type: 'json_object' },
+          reasoning: { enabled: true }
+        } as any)
       );
 
       const result = JSON.parse(response.choices[0].message.content || '{}');

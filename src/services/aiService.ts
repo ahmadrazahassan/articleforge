@@ -203,10 +203,10 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use Google Gemini 2.0 Flash Exp for superior article generation with retry logic
+    // Use GPT OSS 120B with reasoning for superior article generation
     const apiResponse = await retryWithBackoff(() => 
       client.chat.completions.create({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'openai/gpt-oss-120b:free',
         messages: [
           {
             role: 'system',
@@ -219,8 +219,9 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
         ],
         temperature: 0.8,
         max_tokens: 16000,
-        response_format: { type: 'json_object' }
-      })
+        response_format: { type: 'json_object' },
+        reasoning: { enabled: true }
+      } as any)
     );
 
     const response = apiResponse.choices[0].message;
@@ -301,10 +302,10 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use Google Gemini 2.0 Flash Exp for intelligent category suggestions with retry logic
+    // Use GPT OSS 120B with reasoning for intelligent category suggestions
     const apiResponse = await retryWithBackoff(() =>
       client.chat.completions.create({
-        model: 'google/gemini-2.0-flash-exp:free',
+        model: 'openai/gpt-oss-120b:free',
         messages: [
           {
             role: 'system',
@@ -317,8 +318,9 @@ export async function suggestCategories(description: string): Promise<CategorySu
         ],
         temperature: 0.7,
         max_tokens: 1000,
-        response_format: { type: 'json_object' }
-      })
+        response_format: { type: 'json_object' },
+        reasoning: { enabled: true }
+      } as any)
     );
 
     const response = apiResponse.choices[0].message;
