@@ -3,18 +3,20 @@ import OpenAI from 'openai';
 import { SEOService } from './seoService';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
+const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
+  defaultHeaders: {
+    'HTTP-Referer': SITE_URL,
+    'X-Title': SITE_NAME,
+  },
 });
 
-// Type for Grok's reasoning details
-type GrokChatMessage = {
-  content: string | null;
-  reasoning_details?: unknown;
-};
+
 
 function buildPrompt(formData: GeneratorFormData): string {
   const lengthMap = {
@@ -171,13 +173,13 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use Grok 4.1 with advanced reasoning for superior article generation
-    const apiResponse = await (client.chat.completions.create as any)({
-      model: 'x-ai/grok-4.1-fast:free',
+    // Use DeepSeek R1T Chimera for superior article generation
+    const apiResponse = await client.chat.completions.create({
+      model: 'tngtech/deepseek-r1t-chimera:free',
       messages: [
         {
           role: 'system',
-          content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON. Use your advanced reasoning capabilities to create the most valuable, unique, and SEO-optimized content possible.'
+          content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.'
         },
         {
           role: 'user',
@@ -186,11 +188,10 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
       ],
       temperature: 0.8,
       max_tokens: 16000,
-      response_format: { type: 'json_object' },
-      reasoning: { enabled: true } // Enable Grok's advanced reasoning
+      response_format: { type: 'json_object' }
     });
 
-    const response = apiResponse.choices[0].message as GrokChatMessage;
+    const response = apiResponse.choices[0].message;
     
     if (!response.content) {
       throw new Error('No content received from API');
@@ -268,13 +269,13 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use Grok 4.1 for intelligent category suggestions
-    const apiResponse = await (client.chat.completions.create as any)({
-      model: 'x-ai/grok-4.1-fast:free',
+    // Use DeepSeek R1T Chimera for intelligent category suggestions
+    const apiResponse = await client.chat.completions.create({
+      model: 'tngtech/deepseek-r1t-chimera:free',
       messages: [
         {
           role: 'system',
-          content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON. Use your reasoning to provide the most accurate categorization.'
+          content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.'
         },
         {
           role: 'user',
@@ -283,11 +284,10 @@ export async function suggestCategories(description: string): Promise<CategorySu
       ],
       temperature: 0.7,
       max_tokens: 1000,
-      response_format: { type: 'json_object' },
-      reasoning: { enabled: true }
+      response_format: { type: 'json_object' }
     });
 
-    const response = apiResponse.choices[0].message as GrokChatMessage;
+    const response = apiResponse.choices[0].message;
     if (!response.content) return [];
 
     const result = JSON.parse(response.content);

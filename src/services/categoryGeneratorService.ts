@@ -2,18 +2,18 @@ import { CategoryGenerationConfig, GeneratorFormData } from '../types';
 import OpenAI from 'openai';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
+const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
+  defaultHeaders: {
+    'HTTP-Referer': SITE_URL,
+    'X-Title': SITE_NAME,
+  },
 });
-
-// Type for Grok's reasoning details
-type GrokChatMessage = {
-  content: string | null;
-  reasoning_details?: unknown;
-};
 
 export class CategoryGeneratorService {
   /**
@@ -29,13 +29,13 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Grok 4.1 with advanced reasoning for superior article idea generation
-      const response = await (client.chat.completions.create as any)({
-        model: 'x-ai/grok-4.1-fast:free',
+      // Use DeepSeek R1T Chimera for superior article idea generation
+      const response = await client.chat.completions.create({
+        model: 'tngtech/deepseek-r1t-chimera:free',
         messages: [
           {
             role: 'system',
-            content: 'You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON. Use your advanced reasoning to create completely unique, valuable, and diverse article concepts.'
+            content: 'You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.'
           },
           {
             role: 'user',
@@ -44,12 +44,10 @@ export class CategoryGeneratorService {
         ],
         temperature: 0.9, // Higher temperature for more creativity
         max_tokens: 4000,
-        response_format: { type: 'json_object' },
-        reasoning: { enabled: true } // Enable Grok's advanced reasoning for better creativity
+        response_format: { type: 'json_object' }
       });
 
-      const grokResponse = response.choices[0].message as GrokChatMessage;
-      const result = JSON.parse(grokResponse.content || '{}');
+      const result = JSON.parse(response.choices[0].message.content || '{}');
       
       if (!result.articles || !Array.isArray(result.articles)) {
         throw new Error('Invalid response format');
