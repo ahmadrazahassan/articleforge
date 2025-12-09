@@ -221,15 +221,23 @@ CRITICAL REQUIREMENTS:
 - Featured snippet-ready content (lists, tables, definitions)
 - Question-based H2/H3 for voice search
 
-JSON RESPONSE FORMAT:
+⚠️ CRITICAL JSON FORMATTING RULES:
+- You MUST return ONLY valid JSON (no markdown, no code blocks, no extra text)
+- ALL quotes inside HTML must be escaped as \\" 
+- ALL newlines inside HTML must be escaped as \\n
+- ALL backslashes must be escaped as \\\\
+- The htmlArticle field must be a single-line escaped string
+- Do NOT wrap response in \`\`\`json or any markdown
+
+JSON RESPONSE FORMAT (RETURN ONLY THIS, NOTHING ELSE):
 {
-  "htmlArticle": "Complete, production-ready HTML document with all requirements above",
-  "title": "Compelling, keyword-rich title (50-65 characters, include power words)",
+  "htmlArticle": "Complete HTML as single escaped string with \\" for quotes and \\n for newlines",
+  "title": "Compelling, keyword-rich title (50-65 characters)",
   "category": "Specific primary category",
-  "tags": ["10-15 highly relevant tags including long-tail variations"],
-  "metaDescription": "Persuasive meta description with call-to-action (150-160 characters)",
-  "slug": "seo-optimized-url-slug-with-primary-keywords",
-  "focusKeywords": ["5-7 strategically chosen keywords including primary and LSI terms"]
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
+  "metaDescription": "Persuasive meta description (150-160 characters)",
+  "slug": "seo-optimized-url-slug",
+  "focusKeywords": ["keyword1", "keyword2", "keyword3"]
 }
 
 EXCELLENCE CHECKLIST:
@@ -261,7 +269,11 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
         messages: [
           {
             role: 'user' as const,
-            content: `You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.\n\n${buildPrompt(formData)}`
+            content: `You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights.
+
+CRITICAL: You MUST respond with ONLY valid, properly escaped JSON. No markdown code blocks, no extra text, just pure JSON. All quotes in HTML must be escaped as \\", all newlines as \\n.
+
+${buildPrompt(formData)}`
           }
         ],
         reasoning: { enabled: true }
