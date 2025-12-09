@@ -67,10 +67,11 @@ export class CategoryGeneratorService {
           messages: [
             {
               role: 'user' as const,
-              content: `You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.\n\n${prompt}`
+              content: `You are a world-class content strategist, innovation consultant, and SEO expert with deep knowledge of 2025-2026 trends across all industries. You specialize in generating breakthrough, highly specific, and unique article ideas that stand out from generic content. You think creatively, explore niche angles, and always deliver fresh perspectives. Always respond with valid JSON.\n\n${prompt}`
             }
           ],
-          reasoning: { enabled: true }
+          reasoning: { enabled: true },
+          temperature: 0.95
         } as any)
       );
 
@@ -110,17 +111,22 @@ export class CategoryGeneratorService {
   private static buildCategoryPrompt(config: CategoryGenerationConfig): string {
     const currentYear = 2025;
     const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    const timestamp = Date.now();
+    const randomSeed = Math.floor(Math.random() * 10000);
 
-    return `Generate ${config.count} unique, trending article ideas for the "${config.category}" category.
+    return `Generate ${config.count} COMPLETELY FRESH AND UNIQUE article ideas for the "${config.category}" category.
 
-REQUIREMENTS:
+⚠️ CRITICAL: DO NOT repeat common or generic topics. Think creatively and generate truly innovative ideas.
+
+UNIQUENESS SEED: ${timestamp}-${randomSeed}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📅 CURRENT CONTEXT:
 - Year: ${currentYear}
 - Month: ${currentMonth}
-- Focus on current trends, technologies, and best practices
-- Include ${currentYear} statistics, data, and examples
+- Focus on CUTTING-EDGE trends, emerging technologies, and innovative approaches
+- Include ${currentYear} breakthrough developments and future predictions
+- Reference real-world case studies and success stories
 
 🎯 ARTICLE SPECIFICATIONS:
 - Category: ${config.category}
@@ -130,52 +136,70 @@ REQUIREMENTS:
 ${config.targetAudience ? `- Target Audience: ${config.targetAudience}` : ''}
 ${config.customKeywords ? `- Include Keywords: ${config.customKeywords.join(', ')}` : ''}
 
-💡 CREATIVITY REQUIREMENTS:
-1. Each article must be COMPLETELY UNIQUE and different from others
-2. Cover different angles, subtopics, and perspectives within the category
-3. Use current ${currentYear} trends and emerging topics
-4. Include specific, actionable topics (not generic)
-5. Mix beginner, intermediate, and advanced topics
-6. Include practical, real-world applications
-7. Reference modern tools, platforms, and technologies
+💡 MAXIMUM CREATIVITY REQUIREMENTS:
+1. Each article MUST be 100% UNIQUE - no repetition of common topics
+2. Explore NICHE subtopics, emerging trends, and unconventional angles
+3. Include SPECIFIC use cases, industries, or scenarios (e.g., "for remote teams", "in healthcare", "for startups")
+4. Mix different complexity levels: beginner-friendly, intermediate deep-dives, expert-level analysis
+5. Combine multiple concepts (e.g., "AI + Sustainability", "Blockchain + Healthcare")
+6. Reference SPECIFIC tools, platforms, frameworks, or methodologies
+7. Include timely topics: recent developments, upcoming trends, seasonal relevance
+8. Think globally: different markets, regions, cultural perspectives
+9. Address pain points: common challenges, mistakes, optimization opportunities
+10. Future-focused: predictions, upcoming changes, preparation strategies
 
-📝 DIVERSITY GUIDELINES:
-- Vary the focus: how-to, best practices, comparisons, trends, case studies
-- Different target audiences: beginners, professionals, enterprises, individuals
-- Various formats: step-by-step, comprehensive guides, quick tips, deep dives
-- Mix evergreen content with trending topics
-- Include problem-solving and solution-oriented topics
+📝 EXTREME DIVERSITY GUIDELINES:
+- Content types: how-to guides, case studies, comparisons, trend analysis, expert interviews, tool reviews, strategy frameworks, checklists, troubleshooting guides, optimization tips
+- Audience segments: solopreneurs, enterprises, developers, marketers, executives, students, freelancers, agencies, non-profits
+- Formats: step-by-step tutorials, comprehensive handbooks, quick-start guides, advanced masterclasses, beginner crash courses
+- Perspectives: cost optimization, time-saving, quality improvement, risk mitigation, growth acceleration, automation, innovation
+- Industries: fintech, healthtech, edtech, e-commerce, SaaS, manufacturing, retail, services
+- Scales: individual, small team, mid-size company, enterprise, global organization
 
-🔍 QUALITY STANDARDS:
-- Website names should be descriptive and specific
-- Descriptions must be detailed (100-200 words minimum)
-- Include specific pain points, solutions, and value propositions
-- Mention target audience and key benefits
-- Add relevant statistics or data points where applicable
+🎨 CREATIVE ANGLES TO EXPLORE:
+- "Hidden" or "underrated" aspects of the category
+- Controversial or contrarian viewpoints
+- Cross-industry applications
+- Budget-conscious vs premium approaches
+- DIY vs professional solutions
+- Traditional vs modern methods
+- Regional or cultural variations
+- Accessibility and inclusivity angles
+- Environmental and sustainability aspects
+- Security and privacy considerations
+- Mobile-first or remote-first approaches
+- Integration with other tools/platforms
+
+🔍 PREMIUM QUALITY STANDARDS:
+- Titles must be HIGHLY SPECIFIC and descriptive (not generic)
+- Descriptions must be 150-250 words with rich detail
+- Include concrete examples, statistics, or data points
+- Mention specific pain points and clear solutions
+- Highlight unique value proposition
+- Add urgency or relevance to ${currentYear}
+- Include actionable takeaways
+- Reference real tools, companies, or methodologies
 
 JSON RESPONSE FORMAT:
 {
   "articles": [
     {
-      "websiteName": "Specific, descriptive website/topic name",
-      "websiteDescription": "Detailed 100-200 word description covering: target audience, main problem/opportunity, key solutions, unique value, specific examples, and why it matters in ${currentYear}",
-      "keywords": ["keyword1", "keyword2", "keyword3"]
+      "websiteName": "Ultra-specific, compelling title with niche focus",
+      "websiteDescription": "Detailed 150-250 word description with: specific target audience, concrete problem/opportunity, detailed solutions, unique insights, real-world examples, ${currentYear} relevance, and clear value proposition",
+      "keywords": ["specific-keyword-1", "niche-keyword-2", "long-tail-keyword-3"]
     }
   ]
 }
 
-EXAMPLE (DO NOT COPY - CREATE NEW UNIQUE IDEAS):
-{
-  "articles": [
-    {
-      "websiteName": "AI-Powered Customer Service Automation for E-commerce in ${currentYear}",
-      "websiteDescription": "Comprehensive guide for e-commerce businesses looking to implement AI-driven customer service solutions. Covers the latest ${currentYear} AI chatbot technologies, integration with popular platforms like Shopify and WooCommerce, cost-benefit analysis, implementation strategies, and real case studies from successful online retailers. Includes comparison of top AI customer service platforms, ROI calculations, and step-by-step setup guides. Perfect for e-commerce managers and business owners wanting to reduce support costs while improving customer satisfaction.",
-      "keywords": ["AI customer service", "e-commerce automation", "chatbot integration"]
-    }
-  ]
-}
+INSPIRATION EXAMPLES (DO NOT COPY - USE AS CREATIVITY SPRINGBOARD):
+- "Zero-Budget Content Marketing Strategies for B2B SaaS Startups in Emerging Markets"
+- "Implementing Ethical AI Governance Frameworks for Healthcare Data Privacy Compliance"
+- "Micro-SaaS Validation Techniques: From Idea to First 100 Paying Customers in 90 Days"
+- "Sustainable Web Development: Reducing Carbon Footprint Through Code Optimization"
+- "Neurodiversity-Inclusive UX Design Patterns for Enterprise Software Applications"
 
-Generate ${config.count} completely unique, high-quality article ideas now. Make each one distinctly different and valuable.`;
+🚀 NOW GENERATE ${config.count} BREAKTHROUGH, INNOVATIVE, HIGHLY SPECIFIC ARTICLE IDEAS:
+Think outside the box. Be creative. Be specific. Be valuable. Make each idea something people haven't seen before.`;
   }
 
   /**
