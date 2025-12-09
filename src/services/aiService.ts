@@ -3,18 +3,19 @@ import OpenAI from 'openai';
 import { SEOService } from './seoService';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
-const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
-  defaultHeaders: {
-    'HTTP-Referer': SITE_URL,
-    'X-Title': SITE_NAME,
-  },
 });
+
+// Type for OpenRouter chat message with reasoning details
+type ORChatMessage = {
+  role: 'user' | 'assistant' | 'system';
+  content: string | null;
+  reasoning_details?: unknown;
+};
 
 // Retry helper with exponential backoff for rate limits
 async function retryWithBackoff<T>(
@@ -203,20 +204,21 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use KAT Coder Pro for superior article generation
+    // Use Amazon Nova 2 Lite with reasoning for superior article generation
     const apiResponse = await retryWithBackoff(() => 
       client.chat.completions.create({
-        model: 'kwaipilot/kat-coder-pro:free',
+        model: 'amazon/nova-2-lite-v1:free',
         messages: [
           {
-            role: 'user',
+            role: 'user' as const,
             content: `You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.\n\n${buildPrompt(formData)}`
           }
-        ]
-      })
+        ],
+        reasoning: { enabled: true }
+      } as any)
     );
 
-    const response = apiResponse.choices[0].message;
+    const response = apiResponse.choices[0].message as ORChatMessage;
     
     if (!response.content) {
       throw new Error('No content received from API');
@@ -294,20 +296,21 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use KAT Coder Pro for intelligent category suggestions
+    // Use Amazon Nova 2 Lite with reasoning for intelligent category suggestions
     const apiResponse = await retryWithBackoff(() =>
       client.chat.completions.create({
-        model: 'kwaipilot/kat-coder-pro:free',
+        model: 'amazon/nova-2-lite-v1:free',
         messages: [
           {
-            role: 'user',
+            role: 'user' as const,
             content: `You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.\n\nAnalyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
           }
-        ]
-      })
+        ],
+        reasoning: { enabled: true }
+      } as any)
     );
 
-    const response = apiResponse.choices[0].message;
+    const response = apiResponse.choices[0].message as ORChatMessage;
     if (!response.content) return [];
 
     const result = JSON.parse(response.content);

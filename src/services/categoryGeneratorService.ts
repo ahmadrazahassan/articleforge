@@ -2,18 +2,19 @@ import { CategoryGenerationConfig, GeneratorFormData } from '../types';
 import OpenAI from 'openai';
 
 const OPENROUTER_API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-const SITE_URL = import.meta.env.VITE_SITE_URL || window.location.origin;
-const SITE_NAME = import.meta.env.VITE_SITE_NAME || 'Article Generator';
 
 const client = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
   apiKey: OPENROUTER_API_KEY,
   dangerouslyAllowBrowser: true,
-  defaultHeaders: {
-    'HTTP-Referer': SITE_URL,
-    'X-Title': SITE_NAME,
-  },
 });
+
+// Type for OpenRouter chat message with reasoning details
+type ORChatMessage = {
+  role: 'user' | 'assistant' | 'system';
+  content: string | null;
+  reasoning_details?: unknown;
+};
 
 // Retry helper with exponential backoff for rate limits
 async function retryWithBackoff<T>(
@@ -59,20 +60,22 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use KAT Coder Pro for superior article idea generation
+      // Use Amazon Nova 2 Lite with reasoning for superior article idea generation
       const response = await retryWithBackoff(() =>
         client.chat.completions.create({
-          model: 'kwaipilot/kat-coder-pro:free',
+          model: 'amazon/nova-2-lite-v1:free',
           messages: [
             {
-              role: 'user',
+              role: 'user' as const,
               content: `You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.\n\n${prompt}`
             }
-          ]
-        })
+          ],
+          reasoning: { enabled: true }
+        } as any)
       );
 
-      const result = JSON.parse(response.choices[0].message.content || '{}');
+      const responseMessage = response.choices[0].message as ORChatMessage;
+      const result = JSON.parse(responseMessage.content || '{}');
       
       if (!result.articles || !Array.isArray(result.articles)) {
         throw new Error('Invalid response format');
