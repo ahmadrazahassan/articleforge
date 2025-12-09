@@ -16,9 +16,9 @@ type ORChatMessage = {
   reasoning_details?: unknown;
 };
 
-// Robust JSON extraction from AI responses
-function extractJSON(content: string): string {
-  if (!content) return '{}';
+// Robust JSON extraction and parsing from AI responses
+function extractAndParseJSON(content: string): any {
+  if (!content) return {};
   
   // Try to extract from markdown code blocks first
   const codeBlockMatch = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
@@ -34,7 +34,36 @@ function extractJSON(content: string): string {
     content = content.substring(firstBrace, lastBrace + 1);
   }
   
-  return content.trim();
+  content = content.trim();
+  
+  // Try to parse JSON with error recovery
+  try {
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Initial JSON parse failed, attempting repair...', error);
+    
+    // Try to fix common JSON issues
+    try {
+      // Fix unescaped newlines in strings
+      let fixed = content.replace(/([^\\])\n/g, '$1\\n');
+      // Fix unescaped quotes in HTML attributes
+      fixed = fixed.replace(/([^\\])"/g, (match, p1, offset) => {
+        // Check if we're inside a JSON string value
+        const beforeMatch = fixed.substring(0, offset);
+        const quoteCount = (beforeMatch.match(/"/g) || []).length;
+        // If odd number of quotes, we're inside a string, escape it
+        if (quoteCount % 2 === 1) {
+          return p1 + '\\"';
+        }
+        return match;
+      });
+      
+      return JSON.parse(fixed);
+    } catch (secondError) {
+      console.error('JSON repair failed:', secondError);
+      throw new Error('Unable to parse AI response as valid JSON. Please try again.');
+    }
+  }
 }
 
 // Retry helper with exponential backoff for rate limits
@@ -99,8 +128,7 @@ export class CategoryGeneratorService {
       const responseMessage = response.choices[0].message as ORChatMessage;
       
       // Extract and parse JSON from response
-      const jsonContent = extractJSON(responseMessage.content || '{}');
-      const result = JSON.parse(jsonContent);
+      const result = extractAndParseJSON(responseMessage.content || '{}');
       
       if (!result.articles || !Array.isArray(result.articles)) {
         throw new Error('Invalid response format');
