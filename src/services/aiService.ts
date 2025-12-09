@@ -173,9 +173,9 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use Google Gemma 3 27B for superior article generation
+    // Use Google Gemini 2.0 Flash Exp for superior article generation
     const apiResponse = await client.chat.completions.create({
-      model: 'google/gemma-3-27b-it:free',
+      model: 'google/gemini-2.0-flash-exp:free',
       messages: [
         {
           role: 'system',
@@ -269,9 +269,9 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use Google Gemma 3 27B for intelligent category suggestions
+    // Use Google Gemini 2.0 Flash Exp for intelligent category suggestions
     const apiResponse = await client.chat.completions.create({
-      model: 'google/gemma-3-27b-it:free',
+      model: 'google/gemini-2.0-flash-exp:free',
       messages: [
         {
           role: 'system',

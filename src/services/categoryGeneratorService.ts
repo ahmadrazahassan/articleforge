@@ -29,9 +29,9 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Google Gemma 3 27B for superior article idea generation
+      // Use Google Gemini 2.0 Flash Exp for superior article idea generation
       const response = await client.chat.completions.create({
-        model: 'google/gemma-3-27b-it:free',
+        model: 'google/gemini-2.0-flash-exp:free',
         messages: [
           {
             role: 'system',
