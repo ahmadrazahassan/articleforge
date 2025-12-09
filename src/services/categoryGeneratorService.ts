@@ -85,10 +85,10 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Mistral 7B Instruct for superior article idea generation
+      // Use TNG R1T Chimera for superior article idea generation
       const response = await retryWithBackoff(() =>
         openai.chat.completions.create({
-          model: 'mistralai/mistral-7b-instruct:free',
+          model: 'tngtech/tng-r1t-chimera:free',
           messages: [
             {
               role: 'user',

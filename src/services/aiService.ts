@@ -310,7 +310,7 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'mistralai/mistral-7b-instruct:free',
+        model: 'tngtech/tng-r1t-chimera:free',
         messages: [
           {
             role: 'user',
@@ -399,7 +399,7 @@ export async function suggestCategories(description: string): Promise<CategorySu
   try {
     const completion = await retryWithBackoff(() =>
       openai.chat.completions.create({
-        model: 'mistralai/mistral-7b-instruct:free',
+        model: 'tngtech/tng-r1t-chimera:free',
         messages: [
           {
             role: 'user',
