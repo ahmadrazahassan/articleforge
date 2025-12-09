@@ -16,6 +16,36 @@ const client = new OpenAI({
   },
 });
 
+// Retry helper with exponential backoff for rate limits
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 2000
+): Promise<T> {
+  let lastError: Error | undefined;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Check if it's a rate limit error
+      if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('rate limit')) {
+        const delay = initialDelay * Math.pow(2, i);
+        console.log(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // If it's not a rate limit error, throw immediately
+      throw error;
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
+}
+
 
 
 function buildPrompt(formData: GeneratorFormData): string {
@@ -173,23 +203,25 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
   }
 
   try {
-    // Use Google Gemini 2.0 Flash Exp for superior article generation
-    const apiResponse = await client.chat.completions.create({
-      model: 'google/gemini-2.0-flash-exp:free',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.'
-        },
-        {
-          role: 'user',
-          content: buildPrompt(formData)
-        }
-      ],
-      temperature: 0.8,
-      max_tokens: 16000,
-      response_format: { type: 'json_object' }
-    });
+    // Use Google Gemini 2.0 Flash Exp for superior article generation with retry logic
+    const apiResponse = await retryWithBackoff(() => 
+      client.chat.completions.create({
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a senior full-stack developer and elite SEO content strategist with 15+ years of experience. You create authoritative, modern, professional content that ranks #1 on Google. Your articles are comprehensive, expertly structured, and packed with actionable insights. You ALWAYS respond with perfectly formatted, valid JSON.'
+          },
+          {
+            role: 'user',
+            content: buildPrompt(formData)
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 16000,
+        response_format: { type: 'json_object' }
+      })
+    );
 
     const response = apiResponse.choices[0].message;
     
@@ -251,7 +283,7 @@ export async function generateBulkArticles(
       
       // Add delay to avoid rate limiting
       if (i < formDataList.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -269,23 +301,25 @@ export async function suggestCategories(description: string): Promise<CategorySu
   }
 
   try {
-    // Use Google Gemini 2.0 Flash Exp for intelligent category suggestions
-    const apiResponse = await client.chat.completions.create({
-      model: 'google/gemini-2.0-flash-exp:free',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.'
-        },
-        {
-          role: 'user',
-          content: `Analyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 1000,
-      response_format: { type: 'json_object' }
-    });
+    // Use Google Gemini 2.0 Flash Exp for intelligent category suggestions with retry logic
+    const apiResponse = await retryWithBackoff(() =>
+      client.chat.completions.create({
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert content categorization specialist. Analyze website descriptions and suggest relevant categories with confidence scores and related tags. Always respond with valid JSON.'
+          },
+          {
+            role: 'user',
+            content: `Analyze this website description and suggest 5 relevant categories with confidence scores (0-1) and 3-5 related tags for each:\n\n"${description}"\n\nRespond with JSON: { "suggestions": [{ "category": "string", "confidence": number, "relatedTags": ["string"] }] }`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 1000,
+        response_format: { type: 'json_object' }
+      })
+    );
 
     const response = apiResponse.choices[0].message;
     if (!response.content) return [];

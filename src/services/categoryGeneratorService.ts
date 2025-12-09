@@ -15,6 +15,36 @@ const client = new OpenAI({
   },
 });
 
+// Retry helper with exponential backoff for rate limits
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  initialDelay = 2000
+): Promise<T> {
+  let lastError: Error | undefined;
+  
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      
+      // Check if it's a rate limit error
+      if (error?.status === 429 || error?.message?.includes('429') || error?.message?.includes('rate limit')) {
+        const delay = initialDelay * Math.pow(2, i);
+        console.log(`Rate limit hit. Retrying in ${delay}ms... (Attempt ${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      // If it's not a rate limit error, throw immediately
+      throw error;
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
+}
+
 export class CategoryGeneratorService {
   /**
    * Generates unique article ideas for a given category
@@ -29,23 +59,25 @@ export class CategoryGeneratorService {
     try {
       const prompt = this.buildCategoryPrompt(config);
       
-      // Use Google Gemini 2.0 Flash Exp for superior article idea generation
-      const response = await client.chat.completions.create({
-        model: 'google/gemini-2.0-flash-exp:free',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.9, // Higher temperature for more creativity
-        max_tokens: 4000,
-        response_format: { type: 'json_object' }
-      });
+      // Use Google Gemini 2.0 Flash Exp for superior article idea generation with retry logic
+      const response = await retryWithBackoff(() =>
+        client.chat.completions.create({
+          model: 'google/gemini-2.0-flash-exp:free',
+          messages: [
+            {
+              role: 'system',
+              content: 'You are an expert content strategist and SEO specialist with deep knowledge of 2025-2026 trends. Generate unique, trending article ideas with detailed descriptions. Always respond with valid JSON.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.9, // Higher temperature for more creativity
+          max_tokens: 4000,
+          response_format: { type: 'json_object' }
+        })
+      );
 
       const result = JSON.parse(response.choices[0].message.content || '{}');
       
