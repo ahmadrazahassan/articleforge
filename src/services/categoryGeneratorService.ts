@@ -75,7 +75,15 @@ export class CategoryGeneratorService {
       );
 
       const responseMessage = response.choices[0].message as ORChatMessage;
-      const result = JSON.parse(responseMessage.content || '{}');
+      
+      // Extract JSON from markdown code blocks if present
+      let jsonContent = responseMessage.content || '{}';
+      const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (jsonMatch) {
+        jsonContent = jsonMatch[1];
+      }
+      
+      const result = JSON.parse(jsonContent);
       
       if (!result.articles || !Array.isArray(result.articles)) {
         throw new Error('Invalid response format');

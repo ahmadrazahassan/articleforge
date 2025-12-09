@@ -224,7 +224,14 @@ export async function generateArticle(formData: GeneratorFormData): Promise<Gene
       throw new Error('No content received from API');
     }
 
-    const result = JSON.parse(response.content);
+    // Extract JSON from markdown code blocks if present
+    let jsonContent = response.content;
+    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      jsonContent = jsonMatch[1];
+    }
+
+    const result = JSON.parse(jsonContent);
 
     if (!result.htmlArticle || !result.title || !result.category || !result.tags || 
         !result.metaDescription || !result.slug || !result.focusKeywords) {
@@ -313,7 +320,14 @@ export async function suggestCategories(description: string): Promise<CategorySu
     const response = apiResponse.choices[0].message as ORChatMessage;
     if (!response.content) return [];
 
-    const result = JSON.parse(response.content);
+    // Extract JSON from markdown code blocks if present
+    let jsonContent = response.content;
+    const jsonMatch = jsonContent.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      jsonContent = jsonMatch[1];
+    }
+
+    const result = JSON.parse(jsonContent);
     return result.suggestions || [];
   } catch (error) {
     console.error('Error suggesting categories:', error);
